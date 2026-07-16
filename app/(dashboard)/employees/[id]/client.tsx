@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState } from "react"
 import { useEmployeeScreen } from "@/features/employees/hooks/useEmployeeScreen"
 import { EmployeeDetail } from "@/features/employees/components/EmployeeDetail"
 import { EmployeeForm } from "@/features/employees/components/EmployeeForm"
@@ -21,20 +21,17 @@ export function EmployeeDetailClient({ id }: { id: string }) {
    const [deleting, setDeleting] = useState(false)
    const [managerName, setManagerName] = useState<string | undefined>(undefined)
 
-   const handleUpdate = useCallback(
-      async (data: CreateEmployeeInput) => {
-         try {
-            await updateMutation.mutateAsync(data)
-            toast.success("Employee updated")
-            setEditing(false)
-         } catch (err) {
-            toast.error(err instanceof Error ? err.message : "Failed to update")
-         }
-      },
-      [updateMutation]
-   )
+   const handleUpdate = async (data: CreateEmployeeInput) => {
+      try {
+         await updateMutation.mutateAsync(data)
+         toast.success("Employee updated")
+         setEditing(false)
+      } catch (err) {
+         toast.error(err instanceof Error ? err.message : "Failed to update")
+      }
+   }
 
-   const handleDelete = useCallback(async () => {
+   const handleDelete = async () => {
       try {
          await deleteMutation.mutateAsync(id)
          toast.success("Employee deleted")
@@ -42,7 +39,7 @@ export function EmployeeDetailClient({ id }: { id: string }) {
       } catch (err) {
          toast.error(err instanceof Error ? err.message : "Failed to delete")
       }
-   }, [deleteMutation, id, router])
+   }
 
    if (!query.data) return <EmployeeDetailSkeleton />
 

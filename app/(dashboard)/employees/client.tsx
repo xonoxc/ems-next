@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState } from "react"
 import { EmployeeTable } from "@/features/employees/components/EmployeeTable"
 import { EmployeeFilters } from "@/features/employees/components/EmployeeFilters"
 import { EmployeePagination } from "@/features/employees/components/EmployeePagination"
@@ -39,34 +39,28 @@ export function EmployeeListClient() {
    const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
    const [deletingEmployee, setDeletingEmployee] = useState<Employee | null>(null)
 
-   const handleCreate = useCallback(
-      async (data: CreateEmployeeInput) => {
-         try {
-            await createMutation.mutateAsync(data)
-            toast.success("Employee created successfully")
-            setShowForm(false)
-         } catch (err: unknown) {
-            toast.error((err as Error).message ?? "Failed to create employee")
-         }
-      },
-      [createMutation]
-   )
+   const handleCreate = async (data: CreateEmployeeInput) => {
+      try {
+         await createMutation.mutateAsync(data)
+         toast.success("Employee created successfully")
+         setShowForm(false)
+      } catch (err: unknown) {
+         toast.error((err as Error).message ?? "Failed to create employee")
+      }
+   }
 
-   const handleUpdate = useCallback(
-      async (data: CreateEmployeeInput) => {
-         if (!editingEmployee) return
-         try {
-            await updateMutation.mutateAsync(data)
-            toast.success("Employee updated successfully")
-            setEditingEmployee(null)
-         } catch (err: unknown) {
-            toast.error((err as Error).message ?? "Failed to update employee")
-         }
-      },
-      [editingEmployee, updateMutation]
-   )
+   const handleUpdate = async (data: CreateEmployeeInput) => {
+      if (!editingEmployee) return
+      try {
+         await updateMutation.mutateAsync(data)
+         toast.success("Employee updated successfully")
+         setEditingEmployee(null)
+      } catch (err: unknown) {
+         toast.error((err as Error).message ?? "Failed to update employee")
+      }
+   }
 
-   const handleDelete = useCallback(async () => {
+   const handleDelete = async () => {
       if (!deletingEmployee) return
       try {
          await deleteMutation.mutateAsync(deletingEmployee.id)
@@ -75,7 +69,7 @@ export function EmployeeListClient() {
       } catch (err: unknown) {
          toast.error((err as Error).message ?? "Failed to delete employee")
       }
-   }, [deletingEmployee, deleteMutation])
+   }
 
    return (
       <div className="space-y-4">

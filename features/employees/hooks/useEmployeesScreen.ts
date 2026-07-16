@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useMemo } from "react"
+import { useState } from "react"
 import { useEmployees } from "./queries/useEmployees"
 import type { EmployeeQueryParams } from "@/features/employees/types"
 import type { Department, EmployeeStatus } from "@/features/employees/constants"
@@ -15,45 +15,43 @@ const DEFAULT_PARAMS: EmployeeQueryParams = {
 export function useEmployeesScreen() {
    const [params, setParams] = useState<EmployeeQueryParams>(DEFAULT_PARAMS)
 
-   const setSearch = useCallback((search: string) => {
+   const setSearch = (search: string) => {
       setParams((prev: EmployeeQueryParams) => ({ ...prev, search: search || undefined, page: 1 }))
-   }, [])
+   }
 
-   const setDepartment = useCallback((department: string | undefined) => {
+   const setDepartment = (department: string | undefined) => {
       setParams((prev: EmployeeQueryParams) => ({
          ...prev,
          department: department as Department | undefined,
          page: 1,
       }))
-   }, [])
+   }
 
-   const setStatus = useCallback((status: string | undefined) => {
+   const setStatus = (status: string | undefined) => {
       setParams((prev: EmployeeQueryParams) => ({
          ...prev,
          status: status as EmployeeStatus | undefined,
          page: 1,
       }))
-   }, [])
+   }
 
-   const setSortBy = useCallback((sortBy: string) => {
+   const setSortBy = (sortBy: string) => {
       setParams((prev: EmployeeQueryParams) => ({ ...prev, sortBy }))
-   }, [])
+   }
 
-   const setSortOrder = useCallback((sortOrder: "asc" | "desc") => {
+   const setSortOrder = (sortOrder: "asc" | "desc") => {
       setParams((prev: EmployeeQueryParams) => ({ ...prev, sortOrder }))
-   }, [])
+   }
 
-   const setPage = useCallback((page: number) => {
+   const setPage = (page: number) => {
       setParams((prev: EmployeeQueryParams) => ({ ...prev, page }))
-   }, [])
+   }
 
-   const resetFilters = useCallback(() => {
+   const resetFilters = () => {
       setParams(DEFAULT_PARAMS)
-   }, [])
+   }
 
-   const hasActiveFilters = useMemo(() => {
-      return !!(params.search || params.department || params.status)
-   }, [params.search, params.department, params.status])
+   const hasActiveFilters = !!(params.search || params.department || params.status)
 
    const result = useEmployees(params)
 
