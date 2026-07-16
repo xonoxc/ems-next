@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { LayoutDashboard, Users, GitBranch, LogOut, Building2 } from "lucide-react"
 import { useSession } from "@/features/auth/hooks"
+import { ThemeToggle } from "@/features/theme/components/ThemeToggle"
 
 const navItems = [
    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -45,7 +46,11 @@ export function Sidebar() {
             })}
          </nav>
 
-         <div className="border-t px-3 py-4">
+         <div className="border-t px-3 py-4 space-y-1">
+            <div className="flex items-center justify-between px-3 py-2">
+               <span className="text-sm text-muted-foreground">Theme</span>
+               <ThemeToggle />
+            </div>
             <button
                onClick={() => signOut()}
                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
