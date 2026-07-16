@@ -10,6 +10,7 @@ import { useUpdateEmployee } from "@/features/employees/hooks/mutations/useUpdat
 import { useDeleteEmployee } from "@/features/employees/hooks/mutations/useDeleteEmployee"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { attempt } from "@/lib/errors"
 import type { CreateEmployeeInput } from "@/features/employees/types"
 
 export function EmployeeDetailClient({ id }: { id: string }) {
@@ -22,23 +23,25 @@ export function EmployeeDetailClient({ id }: { id: string }) {
    const [managerName, setManagerName] = useState<string | undefined>(undefined)
 
    const handleUpdate = async (data: CreateEmployeeInput) => {
-      try {
-         await updateMutation.mutateAsync(data)
-         toast.success("Employee updated")
-         setEditing(false)
-      } catch (err) {
-         toast.error(err instanceof Error ? err.message : "Failed to update")
-      }
+      const result = await attempt(updateMutation.mutateAsync(data))
+      result.match(
+         () => {
+            toast.success("Employee updated")
+            setEditing(false)
+         },
+         err => toast.error(err instanceof Error ? err.message : "Failed to update")
+      )
    }
 
    const handleDelete = async () => {
-      try {
-         await deleteMutation.mutateAsync(id)
-         toast.success("Employee deleted")
-         router.push("/employees")
-      } catch (err) {
-         toast.error(err instanceof Error ? err.message : "Failed to delete")
-      }
+      const result = await attempt(deleteMutation.mutateAsync(id))
+      result.match(
+         () => {
+            toast.success("Employee deleted")
+            router.push("/employees")
+         },
+         err => toast.error(err instanceof Error ? err.message : "Failed to delete")
+      )
    }
 
    if (!query.data) return <EmployeeDetailSkeleton />

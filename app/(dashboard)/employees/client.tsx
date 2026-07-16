@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { toast } from "sonner"
 import { Suspense } from "react"
+import { attempt } from "@/lib/errors"
 import type { Employee, CreateEmployeeInput } from "@/features/employees/types"
 
 export function EmployeeListClient() {
@@ -40,35 +41,38 @@ export function EmployeeListClient() {
    const [deletingEmployee, setDeletingEmployee] = useState<Employee | null>(null)
 
    const handleCreate = async (data: CreateEmployeeInput) => {
-      try {
-         await createMutation.mutateAsync(data)
-         toast.success("Employee created successfully")
-         setShowForm(false)
-      } catch (err: unknown) {
-         toast.error((err as Error).message ?? "Failed to create employee")
-      }
+      const result = await attempt(createMutation.mutateAsync(data))
+      result.match(
+         () => {
+            toast.success("Employee created successfully")
+            setShowForm(false)
+         },
+         err => toast.error((err as Error).message ?? "Failed to create employee")
+      )
    }
 
    const handleUpdate = async (data: CreateEmployeeInput) => {
       if (!editingEmployee) return
-      try {
-         await updateMutation.mutateAsync(data)
-         toast.success("Employee updated successfully")
-         setEditingEmployee(null)
-      } catch (err: unknown) {
-         toast.error((err as Error).message ?? "Failed to update employee")
-      }
+      const result = await attempt(updateMutation.mutateAsync(data))
+      result.match(
+         () => {
+            toast.success("Employee updated successfully")
+            setEditingEmployee(null)
+         },
+         err => toast.error((err as Error).message ?? "Failed to update employee")
+      )
    }
 
    const handleDelete = async () => {
       if (!deletingEmployee) return
-      try {
-         await deleteMutation.mutateAsync(deletingEmployee.id)
-         toast.success("Employee deleted successfully")
-         setDeletingEmployee(null)
-      } catch (err: unknown) {
-         toast.error((err as Error).message ?? "Failed to delete employee")
-      }
+      const result = await attempt(deleteMutation.mutateAsync(deletingEmployee.id))
+      result.match(
+         () => {
+            toast.success("Employee deleted successfully")
+            setDeletingEmployee(null)
+         },
+         err => toast.error((err as Error).message ?? "Failed to delete employee")
+      )
    }
 
    return (
