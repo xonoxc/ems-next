@@ -1,11 +1,13 @@
 import { EmployeeService } from "@/features/employees/server/service"
 import { EmployeeQuerySchema, CreateEmployeeSchema } from "@/features/employees/schemas"
 import { requireSession } from "@/lib/auth"
+import { filterFields, type Role } from "@/server/auth/authorization"
+import type { Employee } from "@/features/employees/types"
 
 export async function GET(request: Request) {
    const sessionResult = await requireSession()
    return sessionResult.match(
-      async () => {
+      async session => {
          const url = new URL(request.url)
          const params = EmployeeQuerySchema.safeParse(Object.fromEntries(url.searchParams))
          if (!params.success) {
@@ -14,7 +16,13 @@ export async function GET(request: Request) {
 
          const result = await EmployeeService.findMany(params.data)
          return result.match(
-            data => Response.json(data),
+            data => {
+               const role = session.user.role as Role
+               const filteredItems = data.items.map(
+                  emp => filterFields(emp as Record<string, unknown>, role, false) as Employee
+               )
+               return Response.json({ ...data, items: filteredItems })
+            },
             error => Response.json({ error: error.message }, { status: error.status })
          )
       },
@@ -26,6 +34,11 @@ export async function POST(request: Request) {
    const sessionResult = await requireSession()
    return sessionResult.match(
       async session => {
+         const role = session.user.role as Role
+         if (!["super_admin", "hr_manager"].includes(role)) {
+            return Response.json({ error: "Insufficient permissions" }, { status: 403 })
+         }
+
          const body = await request.json()
          const parsed = CreateEmployeeSchema.safeParse(body)
          if (!parsed.success) {
