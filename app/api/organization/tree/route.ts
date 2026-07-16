@@ -11,6 +11,6 @@ export async function GET() {
             error => Response.json({ error: error.message }, { status: error.status })
          )
       },
-      error => Response.json({ error: error.message }, { status: error.status })
+      error => Response.json({ error: error.message }, { status: 500 })
    )
 }

@@ -91,7 +91,12 @@ export const OrganizationRepository = {
       )
 
       return result
-         .map(res => buildTree((res as unknown as { rows: Record<string, unknown>[] }).rows))
+         .map(res => {
+            const rows = Array.isArray(res)
+               ? res
+               : ((res as unknown as { rows: Record<string, unknown>[] }).rows ?? [])
+            return buildTree(rows)
+         })
          .mapErr(() => repoErr("Failed to fetch organization tree"))
    },
 
@@ -122,7 +127,9 @@ export const OrganizationRepository = {
 
       return result
          .map(res => {
-            const rows = (res as unknown as { rows: Record<string, unknown>[] }).rows
+            const rows = Array.isArray(res)
+               ? res
+               : ((res as unknown as { rows: Record<string, unknown>[] }).rows ?? [])
             const row = rows[0] as { is_cycle: boolean } | undefined
             return row?.is_cycle ?? false
          })

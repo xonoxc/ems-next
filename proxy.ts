@@ -31,11 +31,18 @@ export function proxy(request: NextRequest) {
          if (!result.allowed) {
             return NextResponse.json({ error: "Too many requests" }, { status: 429 })
          }
+         return NextResponse.next()
       }
+
+      const authCookie = request.cookies.get("better-auth.session_token")
+      if (authCookie && (pathname === "/" || pathname === "/login")) {
+         return NextResponse.redirect(new URL("/dashboard", request.url))
+      }
+
       return NextResponse.next()
    }
 
-   const authCookie = request.cookies.get("better-auth-session")
+   const authCookie = request.cookies.get("better-auth.session_token")
    if (!authCookie) {
       const loginUrl = new URL("/login", request.url)
       loginUrl.searchParams.set("redirect", pathname)

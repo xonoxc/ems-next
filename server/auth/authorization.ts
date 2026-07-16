@@ -28,16 +28,20 @@ export function filterFields<T extends Record<string, unknown>>(
    data: T,
    role: Role,
    isSelf: boolean
-): Partial<T> {
+): T {
    const result: Record<string, unknown> = {}
 
-   for (const field of Object.keys(FIELD_PERMISSIONS) as FieldName[]) {
-      if (field in data && hasPermission(role, field, "read", isSelf)) {
-         result[field] = data[field]
+   for (const key of Object.keys(data)) {
+      if (key in FIELD_PERMISSIONS) {
+         if (hasPermission(role, key as FieldName, "read", isSelf)) {
+            result[key] = data[key]
+         }
+      } else {
+         result[key] = data[key]
       }
    }
 
-   return result as Partial<T>
+   return result as T
 }
 
 export function canWriteField(role: Role, field: FieldName, isSelf: boolean): boolean {

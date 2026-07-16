@@ -1,14 +1,18 @@
 import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query"
-import { OrganizationApiClient } from "@/features/organization/api/api-client"
 import { OrganizationClient } from "@/features/organization/components/OrganizationClient"
+import { OrganizationService } from "@/features/organization/server/service"
 
 export default async function OrganizationPage() {
    const queryClient = new QueryClient()
 
-   await queryClient.prefetchQuery({
-      queryKey: ["organization", "tree"],
-      queryFn: () => OrganizationApiClient.getOrgTree(),
-   })
+   const result = await OrganizationService.getOrgTree()
+
+   result.match(
+      data => {
+         queryClient.setQueryData(["organization", "tree"], data)
+      },
+      () => {}
+   )
 
    return (
       <HydrationBoundary state={dehydrate(queryClient)}>
