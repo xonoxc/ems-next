@@ -68,10 +68,7 @@ export default function LoginPage() {
 
          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-               <label
-                  htmlFor="email"
-                  className="text-sm font-medium text-foreground"
-               >
+               <label htmlFor="email" className="text-sm font-medium text-foreground">
                   Email
                </label>
                <input
@@ -82,18 +79,11 @@ export default function LoginPage() {
                   placeholder="name@example.com"
                   {...register("email")}
                />
-               {errors.email && (
-                  <p className="text-xs text-destructive">
-                     {errors.email.message}
-                  </p>
-               )}
+               {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
             </div>
 
             <div className="space-y-2">
-               <label
-                  htmlFor="password"
-                  className="text-sm font-medium text-foreground"
-               >
+               <label htmlFor="password" className="text-sm font-medium text-foreground">
                   Password
                </label>
                <input
@@ -105,9 +95,7 @@ export default function LoginPage() {
                   {...register("password")}
                />
                {errors.password && (
-                  <p className="text-xs text-destructive">
-                     {errors.password.message}
-                  </p>
+                  <p className="text-xs text-destructive">{errors.password.message}</p>
                )}
             </div>
 
@@ -121,10 +109,7 @@ export default function LoginPage() {
          </form>
 
          <p className="text-center text-xs text-muted-foreground">
-            <Link
-               href="/"
-               className="underline underline-offset-4 hover:text-foreground"
-            >
+            <Link href="/" className="underline underline-offset-4 hover:text-foreground">
                Back to home
             </Link>
          </p>

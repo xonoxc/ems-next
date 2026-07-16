@@ -10,11 +10,7 @@ export interface RateLimitResult {
    retryAfter: number | null
 }
 
-export function rateLimit(
-   key: string,
-   maxTokens: number,
-   windowMs: number
-): RateLimitResult {
+export function rateLimit(key: string, maxTokens: number, windowMs: number): RateLimitResult {
    const now = Date.now()
    const bucket = buckets.get(key) ?? { tokens: maxTokens, lastRefill: now }
 

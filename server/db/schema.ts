@@ -85,13 +85,13 @@ export const employees = pgTable(
       updatedAt: timestamp("updatedAt", { withTimezone: true }).notNull().defaultNow(),
       deletedAt: softDeletedAt,
    },
-   (table) => [
+   table => [
       index("employees_manager_id_idx").on(table.managerId),
       index("employees_department_idx").on(table.department),
       index("employees_email_idx").on(table.email),
       uniqueIndex("employees_employee_id_idx").on(table.employeeId),
       index("employees_not_deleted_idx").on(table.deletedAt),
-   ],
+   ]
 )
 
 export const auditLogs = pgTable(
@@ -107,11 +107,11 @@ export const auditLogs = pgTable(
       metadata: jsonb("metadata"),
       createdAt: timestamp("createdAt", { withTimezone: true }).notNull().defaultNow(),
    },
-   (table) => [
+   table => [
       index("audit_logs_entity_id_idx").on(table.entityId),
       index("audit_logs_actor_id_idx").on(table.actorId),
       index("audit_logs_created_at_idx").on(table.createdAt),
-   ],
+   ]
 )
 
 export const usersRelations = relations(users, ({ many }) => ({

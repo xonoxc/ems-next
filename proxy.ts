@@ -2,16 +2,12 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { rateLimit } from "@/lib/rate-limit"
 
-const publicPaths = [
-   "/",
-   "/login",
-   "/api/auth",
-]
+const publicPaths = ["/", "/login", "/api/auth"]
 
 const staticFilePattern = /\.(ico|png|jpg|jpeg|svg|css|js|woff2?|ttf|eot)$/
 
 function isPublicPath(pathname: string): boolean {
-   return publicPaths.some((p) => pathname === p || pathname.startsWith(p + "/"))
+   return publicPaths.some(p => pathname === p || pathname.startsWith(p + "/"))
 }
 
 export function proxy(request: NextRequest) {
@@ -33,10 +29,7 @@ export function proxy(request: NextRequest) {
             "unknown"
          const result = rateLimit(`auth:${ip}`, 10, 60_000)
          if (!result.allowed) {
-            return NextResponse.json(
-               { error: "Too many requests" },
-               { status: 429 }
-            )
+            return NextResponse.json({ error: "Too many requests" }, { status: 429 })
          }
       }
       return NextResponse.next()
@@ -53,7 +46,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-   matcher: [
-      "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
-   ],
+   matcher: ["/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)"],
 }

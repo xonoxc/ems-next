@@ -3,31 +3,50 @@ dotenv.config({ path: ".env.local" })
 import { eq } from "drizzle-orm"
 import { hash } from "bcryptjs"
 import { db } from "../../lib/db"
-import {
-   users,
-   employees,
-   accounts,
-   auditLogs,
-} from "../db/schema"
+import { users, employees, accounts, auditLogs } from "../db/schema"
 
-const departments = [
-   "Engineering",
-   "Marketing",
-   "Sales",
-   "Finance",
-   "HR",
-   "Operations",
-] as const
+const departments = ["Engineering", "Marketing", "Sales", "Finance", "HR", "Operations"] as const
 
 type Department = (typeof departments)[number]
 
 const designations: Record<Department, string[]> = {
-   Engineering: ["Software Engineer", "Senior Software Engineer", "Tech Lead", "Engineering Manager", "VP of Engineering", "Director of Engineering"],
-   Marketing: ["Marketing Coordinator", "Marketing Specialist", "Marketing Manager", "Director of Marketing", "VP of Marketing"],
-   Sales: ["Sales Representative", "Senior Sales Rep", "Sales Manager", "Director of Sales", "VP of Sales"],
-   Finance: ["Financial Analyst", "Senior Financial Analyst", "Finance Manager", "Director of Finance", "CFO"],
+   Engineering: [
+      "Software Engineer",
+      "Senior Software Engineer",
+      "Tech Lead",
+      "Engineering Manager",
+      "VP of Engineering",
+      "Director of Engineering",
+   ],
+   Marketing: [
+      "Marketing Coordinator",
+      "Marketing Specialist",
+      "Marketing Manager",
+      "Director of Marketing",
+      "VP of Marketing",
+   ],
+   Sales: [
+      "Sales Representative",
+      "Senior Sales Rep",
+      "Sales Manager",
+      "Director of Sales",
+      "VP of Sales",
+   ],
+   Finance: [
+      "Financial Analyst",
+      "Senior Financial Analyst",
+      "Finance Manager",
+      "Director of Finance",
+      "CFO",
+   ],
    HR: ["HR Coordinator", "HR Specialist", "HR Manager", "Director of HR"],
-   Operations: ["Operations Coordinator", "Operations Specialist", "Operations Manager", "Director of Operations", "VP of Operations"],
+   Operations: [
+      "Operations Coordinator",
+      "Operations Specialist",
+      "Operations Manager",
+      "Director of Operations",
+      "VP of Operations",
+   ],
 }
 
 function randomDate(start: Date, end: Date): Date {
@@ -70,31 +89,185 @@ interface SeedEmployee {
 }
 
 const firstNames = [
-   "James", "Mary", "Robert", "Patricia", "John", "Jennifer", "Michael", "Linda",
-   "David", "Elizabeth", "William", "Barbara", "Richard", "Susan", "Joseph", "Jessica",
-   "Thomas", "Sarah", "Christopher", "Karen", "Charles", "Lisa", "Daniel", "Nancy",
-   "Matthew", "Betty", "Anthony", "Margaret", "Mark", "Sandra", "Donald", "Ashley",
-   "Steven", "Dorothy", "Paul", "Kimberly", "Andrew", "Emily", "Joshua", "Donna",
-   "Kenneth", "Michelle", "Kevin", "Carol", "Brian", "Amanda", "George", "Melissa",
-   "Timothy", "Deborah", "Ronald", "Stephanie", "Edward", "Rebecca", "Jason", "Sharon",
-   "Jeffrey", "Laura", "Ryan", "Cynthia", "Jacob", "Kathleen", "Gary", "Amy",
-   "Nicholas", "Angela", "Eric", "Shirley", "Jonathan", "Anna", "Stephen", "Brenda",
-   "Larry", "Pamela", "Justin", "Emma", "Scott", "Nicole", "Brandon", "Helen",
-   "Benjamin", "Samantha", "Samuel", "Katherine", "Raymond", "Christine", "Gregory", "Debra",
-   "Frank", "Rachel", "Alexander", "Carolyn", "Patrick", "Janet", "Jack", "Catherine",
+   "James",
+   "Mary",
+   "Robert",
+   "Patricia",
+   "John",
+   "Jennifer",
+   "Michael",
+   "Linda",
+   "David",
+   "Elizabeth",
+   "William",
+   "Barbara",
+   "Richard",
+   "Susan",
+   "Joseph",
+   "Jessica",
+   "Thomas",
+   "Sarah",
+   "Christopher",
+   "Karen",
+   "Charles",
+   "Lisa",
+   "Daniel",
+   "Nancy",
+   "Matthew",
+   "Betty",
+   "Anthony",
+   "Margaret",
+   "Mark",
+   "Sandra",
+   "Donald",
+   "Ashley",
+   "Steven",
+   "Dorothy",
+   "Paul",
+   "Kimberly",
+   "Andrew",
+   "Emily",
+   "Joshua",
+   "Donna",
+   "Kenneth",
+   "Michelle",
+   "Kevin",
+   "Carol",
+   "Brian",
+   "Amanda",
+   "George",
+   "Melissa",
+   "Timothy",
+   "Deborah",
+   "Ronald",
+   "Stephanie",
+   "Edward",
+   "Rebecca",
+   "Jason",
+   "Sharon",
+   "Jeffrey",
+   "Laura",
+   "Ryan",
+   "Cynthia",
+   "Jacob",
+   "Kathleen",
+   "Gary",
+   "Amy",
+   "Nicholas",
+   "Angela",
+   "Eric",
+   "Shirley",
+   "Jonathan",
+   "Anna",
+   "Stephen",
+   "Brenda",
+   "Larry",
+   "Pamela",
+   "Justin",
+   "Emma",
+   "Scott",
+   "Nicole",
+   "Brandon",
+   "Helen",
+   "Benjamin",
+   "Samantha",
+   "Samuel",
+   "Katherine",
+   "Raymond",
+   "Christine",
+   "Gregory",
+   "Debra",
+   "Frank",
+   "Rachel",
+   "Alexander",
+   "Carolyn",
+   "Patrick",
+   "Janet",
+   "Jack",
+   "Catherine",
 ]
 
 const lastNames = [
-   "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis",
-   "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson",
-   "Thomas", "Taylor", "Moore", "Jackson", "Martin", "Lee", "Perez", "Thompson",
-   "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson", "Walker",
-   "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores",
-   "Green", "Adams", "Nelson", "Baker", "Hall", "Rivera", "Campbell", "Mitchell",
-   "Carter", "Roberts", "Gomez", "Phillips", "Evans", "Turner", "Diaz", "Parker",
-   "Cruz", "Edwards", "Collins", "Reyes", "Stewart", "Morris", "Morales", "Murphy",
-   "Cook", "Rogers", "Gutierrez", "Ortiz", "Morgan", "Cooper", "Peterson", "Bailey",
-   "Reed", "Kelly", "Howard", "Ramos", "Kim", "Cox", "Ward", "Richardson",
+   "Smith",
+   "Johnson",
+   "Williams",
+   "Brown",
+   "Jones",
+   "Garcia",
+   "Miller",
+   "Davis",
+   "Rodriguez",
+   "Martinez",
+   "Hernandez",
+   "Lopez",
+   "Gonzalez",
+   "Wilson",
+   "Anderson",
+   "Thomas",
+   "Taylor",
+   "Moore",
+   "Jackson",
+   "Martin",
+   "Lee",
+   "Perez",
+   "Thompson",
+   "White",
+   "Harris",
+   "Sanchez",
+   "Clark",
+   "Ramirez",
+   "Lewis",
+   "Robinson",
+   "Walker",
+   "Young",
+   "Allen",
+   "King",
+   "Wright",
+   "Scott",
+   "Torres",
+   "Nguyen",
+   "Hill",
+   "Flores",
+   "Green",
+   "Adams",
+   "Nelson",
+   "Baker",
+   "Hall",
+   "Rivera",
+   "Campbell",
+   "Mitchell",
+   "Carter",
+   "Roberts",
+   "Gomez",
+   "Phillips",
+   "Evans",
+   "Turner",
+   "Diaz",
+   "Parker",
+   "Cruz",
+   "Edwards",
+   "Collins",
+   "Reyes",
+   "Stewart",
+   "Morris",
+   "Morales",
+   "Murphy",
+   "Cook",
+   "Rogers",
+   "Gutierrez",
+   "Ortiz",
+   "Morgan",
+   "Cooper",
+   "Peterson",
+   "Bailey",
+   "Reed",
+   "Kelly",
+   "Howard",
+   "Ramos",
+   "Kim",
+   "Cox",
+   "Ward",
+   "Richardson",
 ]
 
 function generateEmployees(): SeedEmployee[] {
@@ -113,8 +286,20 @@ function generateEmployees(): SeedEmployee[] {
    })
 
    const vpNames = [
-      { first: "Marcus", last: "Johnson", dept: "Engineering" as Department, designation: "VP of Engineering", salary: 200000 },
-      { first: "Priya", last: "Patel", dept: "Sales" as Department, designation: "VP of Sales", salary: 190000 },
+      {
+         first: "Marcus",
+         last: "Johnson",
+         dept: "Engineering" as Department,
+         designation: "VP of Engineering",
+         salary: 200000,
+      },
+      {
+         first: "Priya",
+         last: "Patel",
+         dept: "Sales" as Department,
+         designation: "VP of Sales",
+         salary: 190000,
+      },
    ]
 
    for (const vp of vpNames) {
@@ -133,10 +318,38 @@ function generateEmployees(): SeedEmployee[] {
    }
 
    const directorData = [
-      { first: "Sarah", last: "Williams", dept: "Engineering" as Department, designation: "Director of Engineering", salary: 170000, vpIndex: 1 },
-      { first: "David", last: "Brown", dept: "Engineering" as Department, designation: "Director of Engineering", salary: 165000, vpIndex: 1 },
-      { first: "Laura", last: "Martinez", dept: "Marketing" as Department, designation: "Director of Marketing", salary: 160000, vpIndex: 2 },
-      { first: "James", last: "Taylor", dept: "Sales" as Department, designation: "Director of Sales", salary: 155000, vpIndex: 2 },
+      {
+         first: "Sarah",
+         last: "Williams",
+         dept: "Engineering" as Department,
+         designation: "Director of Engineering",
+         salary: 170000,
+         vpIndex: 1,
+      },
+      {
+         first: "David",
+         last: "Brown",
+         dept: "Engineering" as Department,
+         designation: "Director of Engineering",
+         salary: 165000,
+         vpIndex: 1,
+      },
+      {
+         first: "Laura",
+         last: "Martinez",
+         dept: "Marketing" as Department,
+         designation: "Director of Marketing",
+         salary: 160000,
+         vpIndex: 2,
+      },
+      {
+         first: "James",
+         last: "Taylor",
+         dept: "Sales" as Department,
+         designation: "Director of Sales",
+         salary: 155000,
+         vpIndex: 2,
+      },
    ]
 
    for (const d of directorData) {
@@ -155,14 +368,70 @@ function generateEmployees(): SeedEmployee[] {
    }
 
    const managerData = [
-      { first: "Michael", last: "Wilson", dept: "Engineering" as Department, designation: "Engineering Manager", salary: 140000, dirIndex: 3 },
-      { first: "Emily", last: "Davis", dept: "Engineering" as Department, designation: "Engineering Manager", salary: 138000, dirIndex: 3 },
-      { first: "Robert", last: "Garcia", dept: "Engineering" as Department, designation: "Engineering Manager", salary: 135000, dirIndex: 4 },
-      { first: "Jennifer", last: "Rodriguez", dept: "Engineering" as Department, designation: "Engineering Manager", salary: 133000, dirIndex: 4 },
-      { first: "Thomas", last: "Anderson", dept: "Marketing" as Department, designation: "Marketing Manager", salary: 125000, dirIndex: 5 },
-      { first: "Jessica", last: "Thomas", dept: "HR" as Department, designation: "HR Manager", salary: 120000, dirIndex: 5 },
-      { first: "Daniel", last: "Jackson", dept: "Finance" as Department, designation: "Finance Manager", salary: 122000, dirIndex: 6 },
-      { first: "Amanda", last: "White", dept: "Operations" as Department, designation: "Operations Manager", salary: 118000, dirIndex: 6 },
+      {
+         first: "Michael",
+         last: "Wilson",
+         dept: "Engineering" as Department,
+         designation: "Engineering Manager",
+         salary: 140000,
+         dirIndex: 3,
+      },
+      {
+         first: "Emily",
+         last: "Davis",
+         dept: "Engineering" as Department,
+         designation: "Engineering Manager",
+         salary: 138000,
+         dirIndex: 3,
+      },
+      {
+         first: "Robert",
+         last: "Garcia",
+         dept: "Engineering" as Department,
+         designation: "Engineering Manager",
+         salary: 135000,
+         dirIndex: 4,
+      },
+      {
+         first: "Jennifer",
+         last: "Rodriguez",
+         dept: "Engineering" as Department,
+         designation: "Engineering Manager",
+         salary: 133000,
+         dirIndex: 4,
+      },
+      {
+         first: "Thomas",
+         last: "Anderson",
+         dept: "Marketing" as Department,
+         designation: "Marketing Manager",
+         salary: 125000,
+         dirIndex: 5,
+      },
+      {
+         first: "Jessica",
+         last: "Thomas",
+         dept: "HR" as Department,
+         designation: "HR Manager",
+         salary: 120000,
+         dirIndex: 5,
+      },
+      {
+         first: "Daniel",
+         last: "Jackson",
+         dept: "Finance" as Department,
+         designation: "Finance Manager",
+         salary: 122000,
+         dirIndex: 6,
+      },
+      {
+         first: "Amanda",
+         last: "White",
+         dept: "Operations" as Department,
+         designation: "Operations Manager",
+         salary: 118000,
+         dirIndex: 6,
+      },
    ]
 
    for (const m of managerData) {
@@ -181,7 +450,14 @@ function generateEmployees(): SeedEmployee[] {
    }
 
    const usedEmails = new Set(emps.map(e => e.email))
-   const statuses: ("active" | "inactive" | "terminated")[] = ["active", "active", "active", "active", "inactive", "terminated"]
+   const statuses: ("active" | "inactive" | "terminated")[] = [
+      "active",
+      "active",
+      "active",
+      "active",
+      "inactive",
+      "terminated",
+   ]
 
    for (let i = 0; i < 35; i++) {
       let firstName: string
@@ -198,9 +474,14 @@ function generateEmployees(): SeedEmployee[] {
 
       const dept = randomPick(departments)
       const designationPool = designations[dept].filter(
-         d => !d.toLowerCase().includes("vp") && !d.toLowerCase().includes("director") && !d.toLowerCase().includes("manager"),
+         d =>
+            !d.toLowerCase().includes("vp") &&
+            !d.toLowerCase().includes("director") &&
+            !d.toLowerCase().includes("manager")
       )
-      const designation = randomPick(designationPool.length > 0 ? designationPool : designations[dept])
+      const designation = randomPick(
+         designationPool.length > 0 ? designationPool : designations[dept]
+      )
 
       const managerIndex = 9 + Math.floor(Math.random() * 8)
       const status = randomPick(statuses)
@@ -257,29 +538,29 @@ async function seed() {
       const emp = employeesData[i]
       const [created] = await db
          .insert(employees)
-          .values({
-             employeeId: `EMP${String(i + 1).padStart(4, "0")}`,
-             firstName: emp.firstName,
-             lastName: emp.lastName,
-             email: emp.email,
-             phone: randomPhone(),
-             department: emp.department,
-             designation: emp.designation,
-             salary: String(emp.salary),
-             joiningDate: emp.joiningDate,
-             status: emp.status,
-             profileImage: `https://i.pravatar.cc/150?u=${emp.email}`,
-          })
+         .values({
+            employeeId: `EMP${String(i + 1).padStart(4, "0")}`,
+            firstName: emp.firstName,
+            lastName: emp.lastName,
+            email: emp.email,
+            phone: randomPhone(),
+            department: emp.department,
+            designation: emp.designation,
+            salary: String(emp.salary),
+            joiningDate: emp.joiningDate,
+            status: emp.status,
+            profileImage: `https://i.pravatar.cc/150?u=${emp.email}`,
+         })
          .returning({ id: employees.id })
-       createdEmployees.push({ id: created.id, index: i })
-    }
+      createdEmployees.push({ id: created.id, index: i })
+   }
 
-    for (let i = 0; i < 3; i++) {
-       await db
-          .update(employees)
-          .set({ userId: createdUsers[i].id })
-          .where(eq(employees.id, createdEmployees[i].id))
-    }
+   for (let i = 0; i < 3; i++) {
+      await db
+         .update(employees)
+         .set({ userId: createdUsers[i].id })
+         .where(eq(employees.id, createdEmployees[i].id))
+   }
 
    console.log("  Setting manager relationships...")
    for (let i = 0; i < employeesData.length; i++) {
@@ -337,7 +618,7 @@ async function seed() {
 
 seed()
    .then(() => process.exit(0))
-   .catch((err) => {
+   .catch(err => {
       console.error("Seed failed:", err)
       process.exit(1)
    })
