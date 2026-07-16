@@ -1,13 +1,13 @@
 "use client"
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { EmployeeApiClient } from "@/features/employees/api/api-client"
+import { deleteEmployee } from "@/features/employees/server/actions"
 
 export function useDeleteEmployee() {
    const queryClient = useQueryClient()
 
    return useMutation({
-      mutationFn: (id: string) => EmployeeApiClient.delete(id),
+      mutationFn: (id: string) => deleteEmployee(id),
       onSuccess: () => {
          queryClient.invalidateQueries({ queryKey: ["employees"] })
       },

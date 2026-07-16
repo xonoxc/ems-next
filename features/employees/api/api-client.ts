@@ -1,10 +1,4 @@
-import type {
-   Employee,
-   CreateEmployeeInput,
-   UpdateEmployeeInput,
-   PaginatedEmployees,
-   EmployeeQueryParams,
-} from "@/features/employees/types"
+import type { Employee, PaginatedEmployees, EmployeeQueryParams } from "@/features/employees/types"
 
 const BASE_URL = "/api/employees"
 
@@ -43,40 +37,6 @@ export const EmployeeApiClient = {
 
    async findById(id: string): Promise<Employee> {
       const response = await fetch(`${BASE_URL}/${id}`)
-      return handleResponse<Employee>(response)
-   },
-
-   async create(data: CreateEmployeeInput): Promise<Employee> {
-      const response = await fetch(BASE_URL, {
-         method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify(data),
-      })
-      return handleResponse<Employee>(response)
-   },
-
-   async update(id: string, data: UpdateEmployeeInput): Promise<Employee> {
-      const response = await fetch(`${BASE_URL}/${id}`, {
-         method: "PUT",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify(data),
-      })
-      return handleResponse<Employee>(response)
-   },
-
-   async delete(id: string): Promise<Employee> {
-      const response = await fetch(`${BASE_URL}/${id}`, {
-         method: "DELETE",
-      })
-      return handleResponse<Employee>(response)
-   },
-
-   async assignManager(employeeId: string, managerId: string): Promise<Employee> {
-      const response = await fetch(`${BASE_URL}/${employeeId}/manager`, {
-         method: "PATCH",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ managerId }),
-      })
       return handleResponse<Employee>(response)
    },
 

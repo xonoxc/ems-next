@@ -17,16 +17,19 @@ export default async function EmployeesPage() {
             sortBy: "createdAt",
             sortOrder: "desc",
          })
-         result.match(data => {
-            const role = getUserRole(session)
-            const filteredItems = data.items.map(
-               emp => filterFields(emp as Record<string, unknown>, role, false) as Employee
-            )
-            queryClient.setQueryData(
-               ["employees", { page: 1, pageSize: 10, sortBy: "createdAt", sortOrder: "desc" }],
-               { ...data, items: filteredItems }
-            )
-         })
+         result.match(
+            data => {
+               const role = getUserRole(session)
+               const filteredItems = data.items.map(
+                  emp => filterFields(emp as Record<string, unknown>, role, false) as Employee
+               )
+               queryClient.setQueryData(
+                  ["employees", { page: 1, pageSize: 10, sortBy: "createdAt", sortOrder: "desc" }],
+                  { ...data, items: filteredItems }
+               )
+            },
+            () => {}
+         )
       },
       () => {}
    )
