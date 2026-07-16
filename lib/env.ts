@@ -11,7 +11,17 @@ const envSchema = z.object({
    UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
 })
 
-export const env = attemptSync(() => envSchema.parse(process.env)).match(
+const envVars = {
+   DATABASE_URL: process.env.DATABASE_URL,
+   BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+   BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+   NODE_ENV: process.env.NODE_ENV,
+   BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN,
+   UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+   UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
+}
+
+export const env = attemptSync(() => envSchema.parse(envVars)).match(
    parsed => parsed,
    () => {
       throw new Error("Invalid environment variables")

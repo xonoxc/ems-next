@@ -1,5 +1,3 @@
-import dotenv from "dotenv"
-dotenv.config({ path: ".env.local" })
 import { eq } from "drizzle-orm"
 import { hash } from "bcryptjs"
 import { db } from "../../lib/db"
