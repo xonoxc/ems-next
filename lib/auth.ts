@@ -10,16 +10,17 @@ export async function getSession() {
    return session
 }
 
+type AuthError = { status: number; message: string }
+
 export async function requireSession() {
    const sessionResult = await attempt(getSession())
 
-   return sessionResult.andThen(session => {
-      if (!session) {
-         return err({
-            status: 401,
-            message: "Unauthorized",
-         })
-      }
-      return ok(session)
-   })
+   return sessionResult
+      .mapErr((): AuthError => ({ status: 500, message: "Authentication check failed" }))
+      .andThen(session => {
+         if (!session) {
+            return err({ status: 401, message: "Unauthorized" } satisfies AuthError)
+         }
+         return ok(session)
+      })
 }
