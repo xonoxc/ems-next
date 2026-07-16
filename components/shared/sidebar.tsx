@@ -6,16 +6,41 @@ import { cn } from "@/lib/utils"
 import { LayoutDashboard, Users, GitBranch, LogOut, Building2 } from "lucide-react"
 import { useSession } from "@/features/auth/hooks"
 import { ThemeToggle } from "@/features/theme/components/ThemeToggle"
+import { useQueryClient } from "@tanstack/react-query"
+import { dashboardSummaryQueryOptions } from "@/features/dashboard/api/query-options"
+import { employeesQueryOptions } from "@/features/employees/api/query-options"
+import { orgTreeQueryOptions } from "@/features/organization/api/query-options"
 
 const navItems = [
-   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-   { href: "/employees", label: "Employees", icon: Users },
-   { href: "/organization", label: "Organization", icon: GitBranch },
+   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, key: "dashboard" },
+   { href: "/employees", label: "Employees", icon: Users, key: "employees" },
+   { href: "/organization", label: "Organization", icon: GitBranch, key: "organization" },
 ]
 
 export function Sidebar() {
    const pathname = usePathname()
    const { signOut } = useSession()
+
+   const queryClient = useQueryClient()
+
+   const prefetch = (key: string) => ({
+      onMouseEnter: () => {
+         if (key === "dashboard") {
+            queryClient.prefetchQuery(dashboardSummaryQueryOptions())
+         } else if (key === "employees") {
+            queryClient.prefetchQuery(
+               employeesQueryOptions({
+                  page: 1,
+                  pageSize: 10,
+                  sortBy: "createdAt",
+                  sortOrder: "desc",
+               })
+            )
+         } else if (key === "organization") {
+            queryClient.prefetchQuery(orgTreeQueryOptions())
+         }
+      },
+   })
 
    return (
       <aside className="flex w-64 flex-col border-r bg-background">
@@ -32,6 +57,7 @@ export function Sidebar() {
                   <Link
                      key={item.href}
                      href={item.href}
+                     {...prefetch(item.key)}
                      className={cn(
                         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                         isActive

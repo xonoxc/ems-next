@@ -1,3 +1,5 @@
+"use client"
+
 import {
    Table,
    TableBody,
@@ -10,6 +12,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Edit, Trash2 } from "lucide-react"
 import Link from "next/link"
+import { useQueryClient } from "@tanstack/react-query"
+import { employeeQueryOptions } from "@/features/employees/api/query-options"
 import { EmployeeAvatar } from "./EmployeeAvatar"
 import type { Employee } from "@/features/employees/types"
 
@@ -26,6 +30,8 @@ const statusBadgeVariant: Record<string, "default" | "secondary" | "destructive"
 }
 
 export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProps) {
+   const queryClient = useQueryClient()
+
    if (employees.length === 0) return null
 
    return (
@@ -44,7 +50,16 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
             {employees.map(employee => (
                <TableRow key={employee.id}>
                   <TableCell>
-                     <Link href={`/employees/${employee.id}`} className="flex items-center gap-3">
+                     <Link
+                        href={`/employees/${employee.id}`}
+                        className="flex items-center gap-3"
+                        onMouseEnter={() =>
+                           queryClient.prefetchQuery({
+                              ...employeeQueryOptions(employee.id),
+                              staleTime: 60_000,
+                           })
+                        }
+                     >
                         <EmployeeAvatar
                            src={employee.profileImage}
                            firstName={employee.firstName}
