@@ -23,7 +23,8 @@ const envVars = {
 
 export const env = attemptSync(() => envSchema.parse(envVars)).match(
    parsed => parsed,
-   () => {
+   e => {
+      console.error("Invalid environment variables:", e)
       throw new Error("Invalid environment variables")
    }
 )

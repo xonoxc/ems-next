@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm"
-import { hash } from "bcryptjs"
+import { hashPassword } from "@better-auth/utils/password"
 import { db } from "../../lib/db"
 import { users, employees, accounts, auditLogs } from "../db/schema"
 
@@ -503,7 +503,7 @@ function generateEmployees(): SeedEmployee[] {
 const employeesData = generateEmployees()
 
 async function seed() {
-   const PASSWORD_HASH = await hash("password123", 10)
+   const PASSWORD_HASH = await hashPassword("password123")
    console.log("Seeding database...")
 
    console.log("  Creating users...")

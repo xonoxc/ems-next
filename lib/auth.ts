@@ -2,12 +2,17 @@ import { headers } from "next/headers"
 import { auth } from "@/server/auth/config"
 import { attempt } from "./errors"
 import { ok, err } from "neverthrow"
+import type { Role } from "@/features/auth/constants/roles"
 
 export async function getSession() {
    const session = await auth.api.getSession({
       headers: await headers(),
    })
    return session
+}
+
+export function getUserRole(session: { user: Record<string, unknown> }): Role {
+   return (session.user.role ?? "employee") as Role
 }
 
 type AuthError = { status: number; message: string }

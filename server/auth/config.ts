@@ -5,6 +5,11 @@ import { db } from "@/lib/db"
 import { env } from "@/lib/env"
 
 export const auth = betterAuth({
+   advanced: {
+      database: {
+         generateId: "uuid",
+      },
+   },
    database: drizzleAdapter(db, {
       provider: "pg",
       usePlural: true,

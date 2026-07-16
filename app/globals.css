@@ -42,7 +42,8 @@
    --radius-lg: var(--radius);
    --radius-xl: calc(var(--radius) + 4px);
    --font-sans: var(--font-sans);
-   --font-mono: var(--font-geist-mono);
+   --font-mono:
+      ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
    --color-sidebar-border: var(--sidebar-border);
    --color-sidebar-ring: var(--sidebar-ring);
    --color-chart-1: var(--chart-1);

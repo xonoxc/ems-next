@@ -1,7 +1,7 @@
 import { EmployeeService } from "@/features/employees/server/service"
 import { UpdateEmployeeSchema } from "@/features/employees/schemas"
-import { requireSession } from "@/lib/auth"
-import { filterFields, canWriteField, type Role } from "@/server/auth/authorization"
+import { requireSession, getUserRole } from "@/lib/auth"
+import { filterFields, canWriteField } from "@/server/auth/authorization"
 import type { Employee } from "@/features/employees/types"
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -12,7 +12,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
          const result = await EmployeeService.findById(id)
          return result.match(
             data => {
-               const role = session.user.role as Role
+               const role = getUserRole(session)
                const isSelf = data.userId === session.user.id
                const filtered = filterFields(
                   data as Record<string, unknown>,
@@ -33,7 +33,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
    return sessionResult.match(
       async session => {
          const { id } = await params
-         const role = session.user.role as Role
+         const role = getUserRole(session)
 
          const body = await request.json()
          const parsed = UpdateEmployeeSchema.safeParse(body)
@@ -74,7 +74,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
    const sessionResult = await requireSession()
    return sessionResult.match(
       async session => {
-         const role = session.user.role as Role
+         const role = getUserRole(session)
          if (!["super_admin", "hr_manager"].includes(role)) {
             return Response.json({ error: "Insufficient permissions" }, { status: 403 })
          }

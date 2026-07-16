@@ -1,12 +1,11 @@
 import { OrganizationService } from "@/features/organization/server/service"
-import { requireSession } from "@/lib/auth"
-import { type Role } from "@/server/auth/authorization"
+import { requireSession, getUserRole } from "@/lib/auth"
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
    const sessionResult = await requireSession()
    return sessionResult.match(
       async session => {
-         const role = session.user.role as Role
+         const role = getUserRole(session)
          if (!["super_admin", "hr_manager"].includes(role)) {
             return Response.json({ error: "Insufficient permissions" }, { status: 403 })
          }
