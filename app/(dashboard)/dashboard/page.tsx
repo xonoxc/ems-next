@@ -1,17 +1,21 @@
 import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query"
-import { DashboardClient } from "./client"
+import { DashboardService } from "@/features/dashboard/server/service"
 import { dashboardSummaryQueryOptions } from "@/features/dashboard/api/query-options"
-import { employeesQueryOptions } from "@/features/employees/api/query-options"
+import { DashboardClient } from "./client"
 
 export default async function DashboardPage() {
    const queryClient = new QueryClient()
 
-   await Promise.all([
-      queryClient.prefetchQuery(dashboardSummaryQueryOptions()),
-      queryClient.prefetchQuery(
-         employeesQueryOptions({ page: 1, pageSize: 10, sortBy: "createdAt", sortOrder: "desc" })
-      ),
-   ])
+   await queryClient.prefetchQuery({
+      ...dashboardSummaryQueryOptions(),
+      queryFn: async () => {
+         const result = await DashboardService.getSummary()
+         if (result.isErr()) {
+            throw new Error(result.error.message)
+         }
+         return result.value
+      },
+   })
 
    return (
       <HydrationBoundary state={dehydrate(queryClient)}>

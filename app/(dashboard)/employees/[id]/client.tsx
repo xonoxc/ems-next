@@ -1,11 +1,16 @@
 "use client"
 
 import { useEmployeeScreen } from "@/features/employees/hooks/useEmployeeScreen"
+import { useEmployees, useReportees } from "@/features/employees/hooks/queries/useEmployees"
 import { EmployeeDetail } from "@/features/employees/components/EmployeeDetail"
 import { EmployeeForm } from "@/features/employees/components/EmployeeForm"
 import { EmployeeDetailSkeleton } from "@/features/employees/components/EmployeeSkeleton"
 import { DeleteEmployeeDialog } from "@/features/employees/components/DeleteEmployeeDialog"
-import { useState } from "react"
+import { AssignManagerDialog } from "@/features/employees/components/AssignManagerDialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { ArrowLeft } from "lucide-react"
+import Link from "next/link"
 
 export function EmployeeDetailClient({ id }: { id: string }) {
    const {
@@ -14,11 +19,25 @@ export function EmployeeDetailClient({ id }: { id: string }) {
       setEditing,
       deleting,
       setDeleting,
+      assigningManager,
+      setAssigningManager,
       handleUpdate,
       handleDelete,
+      handleAssignManager,
       isSubmitting,
+      isAssigningManager,
    } = useEmployeeScreen(id)
-   const [managerName, setManagerName] = useState<string | undefined>(undefined)
+
+   const employeesQuery = useEmployees({
+      page: 1,
+      pageSize: 100,
+      sortBy: "firstName",
+      sortOrder: "asc",
+   })
+   const employees = employeesQuery.data?.items ?? []
+
+   const reporteesQuery = useReportees(id)
+   const reportees = reporteesQuery.data ?? []
 
    if (!query.data) return <EmployeeDetailSkeleton />
 
@@ -26,26 +45,42 @@ export function EmployeeDetailClient({ id }: { id: string }) {
 
    return (
       <div>
-         <EmployeeDetail
-            employee={employee}
-            managerName={managerName}
-            onEdit={() => setEditing(true)}
-            onDelete={() => setDeleting(true)}
-            onAssignManager={() => setManagerName(undefined)}
-         />
+         <Link href="/employees">
+            <Button variant="ghost" size="sm">
+               <ArrowLeft className="size-4" />
+               Back to Employees
+            </Button>
+         </Link>
+
+         <div className="mt-4">
+            <EmployeeDetail
+               employee={employee}
+               managerName={
+                  employees.find(m => m.id === employee.managerId)
+                     ? `${employees.find(m => m.id === employee.managerId)!.firstName} ${employees.find(m => m.id === employee.managerId)!.lastName}`
+                     : undefined
+               }
+               reportees={reportees}
+               onEdit={() => setEditing(true)}
+               onDelete={() => setDeleting(true)}
+               onAssignManager={() => setAssigningManager(true)}
+            />
+         </div>
 
          {editing && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-               <div className="w-full max-w-lg rounded-lg bg-background p-6 shadow-lg max-h-[90vh] overflow-y-auto">
-                  <h2 className="text-lg font-semibold mb-4">Edit Employee</h2>
+            <Dialog open onOpenChange={open => !open && setEditing(false)}>
+               <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto scrollbar-thin">
+                  <DialogHeader>
+                     <DialogTitle>Edit Employee</DialogTitle>
+                  </DialogHeader>
                   <EmployeeForm
                      employee={employee}
                      onSubmit={handleUpdate}
                      onCancel={() => setEditing(false)}
                      isSubmitting={isSubmitting}
                   />
-               </div>
-            </div>
+               </DialogContent>
+            </Dialog>
          )}
 
          {deleting && (
@@ -54,6 +89,17 @@ export function EmployeeDetailClient({ id }: { id: string }) {
                onConfirm={handleDelete}
                onCancel={() => setDeleting(false)}
                isPending={false}
+            />
+         )}
+
+         {assigningManager && (
+            <AssignManagerDialog
+               employee={employee}
+               managers={employees}
+               currentManagerId={employee.managerId}
+               onAssign={handleAssignManager}
+               onCancel={() => setAssigningManager(false)}
+               isPending={isAssigningManager}
             />
          )}
       </div>

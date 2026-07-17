@@ -1,5 +1,7 @@
 import { Search, X, Loader2 } from "lucide-react"
 import { DEPARTMENTS, STATUSES } from "@/features/employees/constants"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import {
    Select,
    SelectContent,
@@ -35,12 +37,12 @@ export function EmployeeFilters({
       <div className="flex flex-wrap items-center gap-3">
          <div className="relative flex-1 min-w-[200px] max-w-sm">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <input
+            <Input
                type="text"
                placeholder="Search employees..."
                value={search}
                onChange={e => onSearchChange(e.target.value)}
-               className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-8 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+               className="pl-10 pr-8"
             />
             {isFetching && search && (
                <Loader2 className="absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 animate-spin text-muted-foreground" />
@@ -74,13 +76,10 @@ export function EmployeeFilters({
          </Select>
 
          {hasActiveFilters && (
-            <button
-               onClick={onReset}
-               className="flex items-center gap-1 rounded-lg border border-input px-3 py-2 text-sm hover:bg-muted"
-            >
+            <Button variant="outline" onClick={onReset}>
                <X className="size-4" />
                Reset
-            </button>
+            </Button>
          )}
       </div>
    )

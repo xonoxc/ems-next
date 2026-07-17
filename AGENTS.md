@@ -25,3 +25,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - `app/layout.tsx` — root layout (Geist font, Tailwind utility classes)
 - `app/page.tsx` — single home page
 - Path alias: `@/*` maps to project root
+
+## Rules
+
+- ALWAYS USE WEB SEARCH FIRST APPROACH - search the way to do the task on web - fallback to internal knowledge

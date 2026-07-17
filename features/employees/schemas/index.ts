@@ -11,10 +11,9 @@ export const CreateEmployeeSchema = z.object({
    salary: z.coerce.number({ error: "Salary is required" }).positive(),
    joiningDate: z.coerce.date({ error: "Joining date is required" }),
    status: z.enum(STATUSES).default("active"),
-   managerId: z.string().uuid().optional(),
+   managerId: z.uuid().optional(),
    profileImage: z
-      .string()
-      .url("Must be a valid URL")
+      .url({ error: "Must be a valid URL" })
       .refine(
          val => val.startsWith("http://") || val.startsWith("https://"),
          "Must be an HTTP(S) URL"
@@ -35,8 +34,8 @@ export const EmployeeQuerySchema = z.object({
 })
 
 export const AssignManagerSchema = z.object({
-   employeeId: z.string().uuid("Invalid employee ID"),
-   managerId: z.string().uuid("Invalid manager ID"),
+   employeeId: z.uuid({ error: "Invalid employee ID" }),
+   managerId: z.uuid({ error: "Invalid manager ID" }),
 })
 
 export type CreateEmployeeInput = z.infer<typeof CreateEmployeeSchema>

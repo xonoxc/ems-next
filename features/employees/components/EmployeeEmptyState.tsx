@@ -11,7 +11,7 @@ export function EmployeeEmptyState({ hasFilters }: EmployeeEmptyStateProps) {
             <Users className="size-8 text-muted-foreground" />
          </div>
          <h3 className="text-lg font-semibold">
-            {hasFilters ? "No employees match your filters" : "No employees yet"}
+            {hasFilters ? "No employees found" : "No employees yet"}
          </h3>
          <p className="text-sm text-muted-foreground max-w-sm">
             {hasFilters

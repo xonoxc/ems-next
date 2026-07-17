@@ -7,6 +7,7 @@ import { format } from "date-fns"
 interface EmployeeDetailProps {
    employee: Employee
    managerName?: string
+   reportees?: Employee[]
    onEdit: () => void
    onDelete: () => void
    onAssignManager: () => void
@@ -15,6 +16,7 @@ interface EmployeeDetailProps {
 export function EmployeeDetail({
    employee,
    managerName,
+   reportees,
    onEdit,
    onDelete,
    onAssignManager,
@@ -97,6 +99,47 @@ export function EmployeeDetail({
                <p className="font-medium">{managerName ?? "—"}</p>
             </div>
          </div>
+
+         {reportees && reportees.length > 0 && (
+            <div className="space-y-3">
+               <h2 className="text-lg font-semibold">Direct Reports</h2>
+               <div className="space-y-2">
+                  {reportees.map(reportee => (
+                     <div
+                        key={reportee.id}
+                        className="flex items-center gap-3 rounded-lg border p-3"
+                     >
+                        <EmployeeAvatar
+                           src={reportee.profileImage}
+                           firstName={reportee.firstName}
+                           lastName={reportee.lastName}
+                           className="size-8 text-xs"
+                        />
+                        <div>
+                           <p className="text-sm font-medium">
+                              {reportee.firstName} {reportee.lastName}
+                           </p>
+                           <p className="text-xs text-muted-foreground">
+                              {reportee.designation} &middot; {reportee.department}
+                           </p>
+                        </div>
+                        <Badge
+                           variant={
+                              reportee.status === "active"
+                                 ? "default"
+                                 : reportee.status === "inactive"
+                                   ? "secondary"
+                                   : "destructive"
+                           }
+                           className="ml-auto text-xs"
+                        >
+                           {reportee.status}
+                        </Badge>
+                     </div>
+                  ))}
+               </div>
+            </div>
+         )}
       </div>
    )
 }

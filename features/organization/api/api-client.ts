@@ -1,3 +1,5 @@
+import { attempt } from "@/lib/errors"
+
 export class OrganizationApiError extends Error {
    constructor(
       public status: number,
@@ -10,7 +12,11 @@ export class OrganizationApiError extends Error {
 
 async function handleResponse<T>(response: Response): Promise<T> {
    if (!response.ok) {
-      const body = await response.json().catch(() => ({ error: "Unknown error" }))
+      const result = await attempt(response.json())
+      const body = result.match(
+         value => value,
+         () => ({ error: "Unknown error" })
+      )
       throw new OrganizationApiError(response.status, body.error ?? "Unknown error")
    }
    return response.json()

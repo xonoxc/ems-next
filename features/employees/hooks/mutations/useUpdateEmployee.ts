@@ -12,6 +12,7 @@ export function useUpdateEmployee() {
          updateEmployee(id, data),
       onSuccess: () => {
          queryClient.invalidateQueries({ queryKey: ["employees"] })
+         queryClient.invalidateQueries({ queryKey: ["organization", "tree"] })
       },
    })
 }

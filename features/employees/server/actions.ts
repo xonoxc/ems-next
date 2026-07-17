@@ -8,24 +8,30 @@ import {
    AssignManagerSchema,
 } from "@/features/employees/schemas"
 import { requireSession, getUserRole } from "@/lib/auth"
-import { canWriteField } from "@/server/auth/authorization"
+import { canWriteField, requireRole } from "@/server/auth/authorization"
+import { FIELD_PERMISSIONS, type FieldName } from "@/features/auth/constants/roles"
 import { rateLimit } from "@/lib/rate-limit"
 
-type ActionError = { status: number; message: string }
+class ActionException extends Error {
+   status: number
+   constructor(message: string, status: number) {
+      super(message)
+      this.status = status
+   }
+}
 
-function svcErr(message: string, status = 400): ActionError {
-   return { status, message }
+function svcErr(message: string, status = 400): ActionException {
+   return new ActionException(message, status)
 }
 
 export async function createEmployee(data: unknown) {
    const sessionResult = await requireSession()
-   if (sessionResult.isErr()) throw sessionResult.error
+   if (sessionResult.isErr()) throw svcErr(sessionResult.error.message, sessionResult.error.status)
 
    const session = sessionResult.value
    const role = getUserRole(session)
-   if (!["super_admin", "hr_manager"].includes(role)) {
-      throw svcErr("Insufficient permissions", 403)
-   }
+   const roleResult = requireRole(["super_admin", "hr_manager"])(role)
+   if (roleResult.isErr()) throw svcErr(roleResult.error.message, roleResult.error.status)
 
    const rl = rateLimit(`create:${session.user.id}`, 10, 60_000)
    if (!rl.allowed) {
@@ -38,14 +44,14 @@ export async function createEmployee(data: unknown) {
    }
 
    const result = await EmployeeService.create(parsed.data, session.user.id)
-   if (result.isErr()) throw result.error
+   if (result.isErr()) throw svcErr(result.error.message, result.error.status)
 
    return result.value
 }
 
 export async function updateEmployee(id: string, data: unknown) {
    const sessionResult = await requireSession()
-   if (sessionResult.isErr()) throw sessionResult.error
+   if (sessionResult.isErr()) throw svcErr(sessionResult.error.message, sessionResult.error.status)
 
    const session = sessionResult.value
    const role = getUserRole(session)
@@ -72,26 +78,25 @@ export async function updateEmployee(id: string, data: unknown) {
    const isSelf = existing.value.userId === session.user.id
 
    for (const field of Object.keys(parsed.data)) {
-      if (!canWriteField(role, field as never, isSelf)) {
+      if (field in FIELD_PERMISSIONS && !canWriteField(role, field as FieldName, isSelf)) {
          throw svcErr(`Insufficient permissions to update ${field}`, 403)
       }
    }
 
    const result = await EmployeeService.update(id, parsed.data, session.user.id)
-   if (result.isErr()) throw result.error
+   if (result.isErr()) throw svcErr(result.error.message, result.error.status)
 
    return result.value
 }
 
 export async function deleteEmployee(id: string) {
    const sessionResult = await requireSession()
-   if (sessionResult.isErr()) throw sessionResult.error
+   if (sessionResult.isErr()) throw svcErr(sessionResult.error.message, sessionResult.error.status)
 
    const session = sessionResult.value
    const role = getUserRole(session)
-   if (!["super_admin", "hr_manager"].includes(role)) {
-      throw svcErr("Insufficient permissions", 403)
-   }
+   const roleResult = requireRole(["super_admin", "hr_manager"])(role)
+   if (roleResult.isErr()) throw svcErr(roleResult.error.message, roleResult.error.status)
 
    const rl = rateLimit(`delete:${session.user.id}`, 10, 60_000)
    if (!rl.allowed) {
@@ -99,20 +104,19 @@ export async function deleteEmployee(id: string) {
    }
 
    const result = await EmployeeService.softDelete(id, session.user.id)
-   if (result.isErr()) throw result.error
+   if (result.isErr()) throw svcErr(result.error.message, result.error.status)
 
    return result.value
 }
 
 export async function assignManager(employeeId: string, managerId: string) {
    const sessionResult = await requireSession()
-   if (sessionResult.isErr()) throw sessionResult.error
+   if (sessionResult.isErr()) throw svcErr(sessionResult.error.message, sessionResult.error.status)
 
    const session = sessionResult.value
    const role = getUserRole(session)
-   if (!["super_admin", "hr_manager"].includes(role)) {
-      throw svcErr("Insufficient permissions", 403)
-   }
+   const roleResult = requireRole(["super_admin", "hr_manager"])(role)
+   if (roleResult.isErr()) throw svcErr(roleResult.error.message, roleResult.error.status)
 
    const rl = rateLimit(`assign:${session.user.id}`, 10, 60_000)
    if (!rl.allowed) {
@@ -129,7 +133,7 @@ export async function assignManager(employeeId: string, managerId: string) {
       parsed.data.managerId,
       session.user.id
    )
-   if (result.isErr()) throw result.error
+   if (result.isErr()) throw svcErr(result.error.message, result.error.status)
 
    return result.value
 }

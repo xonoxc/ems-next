@@ -11,6 +11,7 @@ export function useCreateEmployee() {
       mutationFn: (data: CreateEmployeeInput) => createEmployee(data),
       onSuccess: () => {
          queryClient.invalidateQueries({ queryKey: ["employees"] })
+         queryClient.invalidateQueries({ queryKey: ["organization", "tree"] })
       },
    })
 }

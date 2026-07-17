@@ -26,7 +26,7 @@ export function StatsCards({
          {cards.map(card => {
             const Icon = card.icon
             return (
-               <Card key={card.title}>
+               <Card key={card.title} className="text-card-foreground rounded-md shadow-none">
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                      <CardTitle className="text-sm font-medium text-muted-foreground">
                         {card.title}

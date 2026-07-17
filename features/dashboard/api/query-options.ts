@@ -5,5 +5,7 @@ export function dashboardSummaryQueryOptions() {
    return queryOptions({
       queryKey: ["dashboard", "summary"],
       queryFn: () => DashboardApiClient.getSummary(),
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
    })
 }

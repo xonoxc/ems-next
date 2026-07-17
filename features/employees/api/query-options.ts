@@ -16,3 +16,10 @@ export function employeeQueryOptions(id: string) {
       queryFn: () => EmployeeApiClient.findById(id),
    })
 }
+
+export function reporteesQueryOptions(managerId: string) {
+   return queryOptions({
+      queryKey: ["employees", managerId, "reportees"],
+      queryFn: () => EmployeeApiClient.findReportees(managerId),
+   })
+}

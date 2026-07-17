@@ -1,29 +1,37 @@
 "use client"
 
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { DEPARTMENTS, STATUSES } from "@/features/employees/constants"
+import { DEPARTMENTS, STATUSES, DESIGNATIONS } from "@/features/employees/constants"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Field, FieldLabel, FieldError } from "@/components/ui/field"
+import {
+   Select,
+   SelectContent,
+   SelectItem,
+   SelectTrigger,
+   SelectValue,
+} from "@/components/ui/select"
 import type { Employee } from "@/features/employees/types"
 import type { CreateEmployeeInput } from "@/features/employees/types"
-import { useEffect } from "react"
 
 const EmployeeFormSchema = z.object({
-   firstName: z.string().min(1, "First name is required"),
-   lastName: z.string().min(1, "Last name is required"),
-   email: z.string().email("Valid email is required"),
+   firstName: z.string({ error: "First name is needed" }).min(1),
+   lastName: z.string({ error: "Last name is needed" }).min(1),
+   email: z.email({ error: "Enter a valid email" }),
    phone: z.string().optional(),
-   department: z.string().min(1, "Department is required"),
-   designation: z.string().min(1, "Designation is required"),
-   salary: z.string().min(1, "Salary is required"),
-   joiningDate: z.string().min(1, "Joining date is required"),
-   status: z.string().min(1, "Status is required"),
-   managerId: z.string().uuid("Must be a valid employee ID").optional().or(z.literal("")),
-   profileImage: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+   department: z.string({ error: "Department is needed" }).min(1),
+   designation: z.string({ error: "Designation is needed" }).min(1),
+   salary: z.string({ error: "Salary is needed" }).min(1),
+   joiningDate: z.string({ error: "Joining date is needed" }).min(1),
+   status: z.string({ error: "Status is needed" }).min(1),
+   managerId: z.uuid({ error: "Must be a valid employee ID" }).optional().or(z.literal("")),
+   profileImage: z.url({ error: "Must be a valid URL" }).optional().or(z.literal("")),
 })
 
-type EmployeeFormValues = z.input<typeof EmployeeFormSchema>
+export type EmployeeFormValues = z.input<typeof EmployeeFormSchema>
 
 interface EmployeeFormProps {
    employee?: Employee | null
@@ -36,7 +44,7 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isSubmitting }: Emp
    const {
       register,
       handleSubmit,
-      reset,
+      control,
       formState: { errors },
    } = useForm<EmployeeFormValues>({
       resolver: zodResolver(EmployeeFormSchema),
@@ -56,23 +64,6 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isSubmitting }: Emp
       },
    })
 
-   useEffect(() => {
-      if (employee) {
-         reset({
-            firstName: employee.firstName,
-            lastName: employee.lastName,
-            email: employee.email,
-            phone: employee.phone ?? "",
-            department: employee.department as EmployeeFormValues["department"],
-            designation: employee.designation,
-            salary: String(employee.salary),
-            joiningDate: new Date(employee.joiningDate).toISOString().split("T")[0],
-            status: employee.status as EmployeeFormValues["status"],
-            managerId: employee.managerId ?? undefined,
-         })
-      }
-   }, [employee, reset])
-
    const handleSubmitForm = async (data: EmployeeFormValues) => {
       await onSubmit({
          ...data,
@@ -83,115 +74,125 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isSubmitting }: Emp
 
    return (
       <form onSubmit={handleSubmit(handleSubmitForm)} className="space-y-4">
+         {Object.keys(errors).length > 0 && <p className="text-sm text-destructive">Required</p>}
          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-               <label className="text-sm font-medium">First Name</label>
-               <input
-                  {...register("firstName")}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-               />
-               {errors.firstName && (
-                  <p className="text-xs text-destructive">{errors.firstName.message}</p>
-               )}
-            </div>
-            <div className="space-y-1">
-               <label className="text-sm font-medium">Last Name</label>
-               <input
-                  {...register("lastName")}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-               />
-               {errors.lastName && (
-                  <p className="text-xs text-destructive">{errors.lastName.message}</p>
-               )}
-            </div>
+            <Field data-invalid={!!errors.firstName}>
+               <FieldLabel htmlFor="firstName">First Name</FieldLabel>
+               <Input id="firstName" {...register("firstName")} aria-invalid={!!errors.firstName} />
+               <FieldError errors={errors.firstName ? [errors.firstName] : undefined} />
+            </Field>
+            <Field data-invalid={!!errors.lastName}>
+               <FieldLabel htmlFor="lastName">Last Name</FieldLabel>
+               <Input id="lastName" {...register("lastName")} aria-invalid={!!errors.lastName} />
+               <FieldError errors={errors.lastName ? [errors.lastName] : undefined} />
+            </Field>
          </div>
 
-         <div className="space-y-1">
-            <label className="text-sm font-medium">Email</label>
-            <input
-               type="email"
-               {...register("email")}
-               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-            />
-            {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
-         </div>
+         <Field data-invalid={!!errors.email}>
+            <FieldLabel htmlFor="email">Email</FieldLabel>
+            <Input id="email" type="email" {...register("email")} aria-invalid={!!errors.email} />
+            <FieldError errors={errors.email ? [errors.email] : undefined} />
+         </Field>
 
          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-               <label className="text-sm font-medium">Phone</label>
-               <input
-                  {...register("phone")}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+            <Field data-invalid={!!errors.phone}>
+               <FieldLabel htmlFor="phone">Phone</FieldLabel>
+               <Input id="phone" {...register("phone")} aria-invalid={!!errors.phone} />
+               <FieldError errors={errors.phone ? [errors.phone] : undefined} />
+            </Field>
+            <Field data-invalid={!!errors.department}>
+               <FieldLabel>Department</FieldLabel>
+               <Controller
+                  control={control}
+                  name="department"
+                  render={({ field, fieldState }) => (
+                     <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="w-full" aria-invalid={fieldState.invalid}>
+                           <SelectValue placeholder="Select department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                           {DEPARTMENTS.map(dept => (
+                              <SelectItem key={dept} value={dept}>
+                                 {dept}
+                              </SelectItem>
+                           ))}
+                        </SelectContent>
+                     </Select>
+                  )}
                />
-            </div>
-            <div className="space-y-1">
-               <label className="text-sm font-medium">Department</label>
-               <select
-                  {...register("department")}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-               >
-                  {DEPARTMENTS.map(dept => (
-                     <option key={dept} value={dept}>
-                        {dept}
-                     </option>
-                  ))}
-               </select>
-               {errors.department && (
-                  <p className="text-xs text-destructive">{errors.department.message}</p>
-               )}
-            </div>
+               <FieldError errors={errors.department ? [errors.department] : undefined} />
+            </Field>
          </div>
 
          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-               <label className="text-sm font-medium">Designation</label>
-               <input
-                  {...register("designation")}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+            <Field data-invalid={!!errors.designation}>
+               <FieldLabel>Designation</FieldLabel>
+               <Controller
+                  control={control}
+                  name="designation"
+                  render={({ field, fieldState }) => (
+                     <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="w-full" aria-invalid={fieldState.invalid}>
+                           <SelectValue placeholder="Select designation" />
+                        </SelectTrigger>
+                        <SelectContent>
+                           {DESIGNATIONS.map(des => (
+                              <SelectItem key={des} value={des}>
+                                 {des}
+                              </SelectItem>
+                           ))}
+                        </SelectContent>
+                     </Select>
+                  )}
                />
-               {errors.designation && (
-                  <p className="text-xs text-destructive">{errors.designation.message}</p>
-               )}
-            </div>
-            <div className="space-y-1">
-               <label className="text-sm font-medium">Salary</label>
-               <input
+               <FieldError errors={errors.designation ? [errors.designation] : undefined} />
+            </Field>
+            <Field data-invalid={!!errors.salary}>
+               <FieldLabel htmlFor="salary">Salary</FieldLabel>
+               <Input
+                  id="salary"
                   type="number"
                   step="0.01"
                   {...register("salary")}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                  aria-invalid={!!errors.salary}
                />
-               {errors.salary && (
-                  <p className="text-xs text-destructive">{errors.salary.message}</p>
-               )}
-            </div>
+               <FieldError errors={errors.salary ? [errors.salary] : undefined} />
+            </Field>
          </div>
 
          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-               <label className="text-sm font-medium">Joining Date</label>
-               <input
+            <Field data-invalid={!!errors.joiningDate}>
+               <FieldLabel htmlFor="joiningDate">Joining Date</FieldLabel>
+               <Input
+                  id="joiningDate"
                   type="date"
                   {...register("joiningDate")}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                  aria-invalid={!!errors.joiningDate}
                />
-               {errors.joiningDate && (
-                  <p className="text-xs text-destructive">{errors.joiningDate.message}</p>
-               )}
-            </div>
-            <div className="space-y-1">
-               <label className="text-sm font-medium">Status</label>
-               <select
-                  {...register("status")}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-               >
-                  {STATUSES.map(s => (
-                     <option key={s} value={s}>
-                        {s.charAt(0).toUpperCase() + s.slice(1)}
-                     </option>
-                  ))}
-               </select>
-            </div>
+               <FieldError errors={errors.joiningDate ? [errors.joiningDate] : undefined} />
+            </Field>
+            <Field data-invalid={!!errors.status}>
+               <FieldLabel>Status</FieldLabel>
+               <Controller
+                  control={control}
+                  name="status"
+                  render={({ field, fieldState }) => (
+                     <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="w-full" aria-invalid={fieldState.invalid}>
+                           <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                           {STATUSES.map(s => (
+                              <SelectItem key={s} value={s}>
+                                 {s.charAt(0).toUpperCase() + s.slice(1)}
+                              </SelectItem>
+                           ))}
+                        </SelectContent>
+                     </Select>
+                  )}
+               />
+               <FieldError errors={errors.status ? [errors.status] : undefined} />
+            </Field>
          </div>
 
          <div className="flex justify-end gap-3 pt-2">

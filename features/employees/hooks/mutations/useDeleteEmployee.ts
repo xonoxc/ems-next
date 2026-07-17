@@ -10,6 +10,7 @@ export function useDeleteEmployee() {
       mutationFn: (id: string) => deleteEmployee(id),
       onSuccess: () => {
          queryClient.invalidateQueries({ queryKey: ["employees"] })
+         queryClient.invalidateQueries({ queryKey: ["organization", "tree"] })
       },
    })
 }

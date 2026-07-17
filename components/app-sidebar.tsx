@@ -58,7 +58,7 @@ export function AppSidebar() {
          <SidebarHeader>
             <SidebarMenu>
                <SidebarMenuItem>
-                  <SidebarMenuButton size="lg" asChild>
+                  <SidebarMenuButton size="lg" asChild className="gap-2 rounded-md">
                      <Link href="/dashboard">
                         <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                            <Building2 className="size-4" />
@@ -79,7 +79,7 @@ export function AppSidebar() {
             <SidebarGroup>
                <SidebarGroupLabel>Navigation</SidebarGroupLabel>
                <SidebarGroupContent>
-                  <SidebarMenu>
+                  <SidebarMenu className="gap-1">
                      {navItems.map(item => {
                         const Icon = item.icon
                         const isActive = pathname.startsWith(item.href)

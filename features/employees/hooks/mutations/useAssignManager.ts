@@ -11,6 +11,7 @@ export function useAssignManager() {
          assignManager(employeeId, managerId),
       onSuccess: () => {
          queryClient.invalidateQueries({ queryKey: ["employees"] })
+         queryClient.invalidateQueries({ queryKey: ["organization", "tree"] })
       },
    })
 }

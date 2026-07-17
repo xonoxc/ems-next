@@ -15,12 +15,6 @@ export default function Home() {
                >
                   Sign In
                </Link>
-               <Link
-                  href="/dashboard"
-                  className="px-6 py-3 bg-secondary text-secondary-foreground rounded-lg font-medium hover:bg-secondary/80 transition-colors"
-               >
-                  Dashboard
-               </Link>
             </div>
          </main>
       </div>

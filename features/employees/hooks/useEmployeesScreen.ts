@@ -79,32 +79,17 @@ export function useEmployeesScreen() {
             setShowForm(false)
          },
          err => {
-            const message =
-               typeof err === "object" && err !== null && "message" in err
-                  ? String((err as { message: unknown }).message)
-                  : "Failed to create employee"
-            toast.error(message)
+            toast.error(getErrorMessage(err, "Failed to create employee"))
          }
       )
    }
 
    const handleUpdate = async (data: CreateEmployeeInput) => {
       if (!editingEmployee) return
-      const changed: Partial<CreateEmployeeInput> = {}
-      for (const [key, value] of Object.entries(data)) {
-         const currentValue = (editingEmployee as Record<string, unknown>)[key]
-         if (String(value) !== String(currentValue)) {
-            ;(changed as Record<string, unknown>)[key] = value
-         }
-      }
-      if (Object.keys(changed).length === 0) {
-         toast.info("No changes to save")
-         return
-      }
       const result = await attempt(
          updateMutation.mutateAsync({
             id: editingEmployee.id,
-            data: changed as CreateEmployeeInput,
+            data,
          })
       )
       result.match(
@@ -113,11 +98,7 @@ export function useEmployeesScreen() {
             setEditingEmployee(null)
          },
          err => {
-            const message =
-               typeof err === "object" && err !== null && "message" in err
-                  ? String((err as { message: unknown }).message)
-                  : "Failed to update employee"
-            toast.error(message)
+            toast.error(getErrorMessage(err, "Failed to update employee"))
          }
       )
    }
@@ -131,11 +112,7 @@ export function useEmployeesScreen() {
             setDeletingEmployee(null)
          },
          err => {
-            const message =
-               typeof err === "object" && err !== null && "message" in err
-                  ? String((err as { message: unknown }).message)
-                  : "Failed to delete employee"
-            toast.error(message)
+            toast.error(getErrorMessage(err, "Failed to delete employee"))
          }
       )
    }

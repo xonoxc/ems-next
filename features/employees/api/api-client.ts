@@ -1,4 +1,5 @@
 import type { Employee, PaginatedEmployees, EmployeeQueryParams } from "@/features/employees/types"
+import { attempt } from "@/lib/errors"
 
 const BASE_URL = "/api/employees"
 
@@ -14,7 +15,11 @@ export class EmployeeApiError extends Error {
 
 async function handleResponse<T>(response: Response): Promise<T> {
    if (!response.ok) {
-      const body = await response.json().catch(() => ({ error: "Unknown error" }))
+      const result = await attempt(response.json())
+      const body = result.match(
+         value => value,
+         () => ({ error: "Unknown error" })
+      )
       throw new EmployeeApiError(response.status, body.error ?? "Unknown error")
    }
    return response.json()

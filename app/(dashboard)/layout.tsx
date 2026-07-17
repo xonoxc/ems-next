@@ -1,6 +1,5 @@
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
-import { Toaster } from "@/components/ui/sonner"
 import { Separator } from "@/components/ui/separator"
 
 export default function DashboardLayout({
@@ -18,7 +17,6 @@ export default function DashboardLayout({
             </header>
             <main className="flex-1 overflow-y-auto bg-muted p-6">{children}</main>
          </SidebarInset>
-         <Toaster />
       </SidebarProvider>
    )
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { QueryProvider } from "@/components/providers/query-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { Toaster } from "@/components/ui/sonner"
 import "./globals.css"
 
 const inter = Inter({
@@ -28,10 +29,11 @@ export default function RootLayout({
                }}
             />
          </head>
-         <body className="h-full flex flex-col">
+         <body className="h-full flex flex-col" suppressHydrationWarning>
             <TooltipProvider>
                <QueryProvider>{children}</QueryProvider>
             </TooltipProvider>
+            <Toaster />
          </body>
       </html>
    )

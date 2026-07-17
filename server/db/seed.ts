@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm"
 import { hashPassword } from "@better-auth/utils/password"
 import { db } from "../../lib/db"
 import { users, employees, accounts, auditLogs } from "../db/schema"
+import { attempt } from "@/lib/errors"
 
 const departments = ["Engineering", "Marketing", "Sales", "Finance", "HR", "Operations"] as const
 
@@ -614,9 +615,13 @@ async function seed() {
    console.log("  Employee: employee@ems.dev / password123")
 }
 
-seed()
-   .then(() => process.exit(0))
-   .catch(err => {
-      console.error("Seed failed:", err)
+async function main() {
+   const result = await attempt(seed())
+   if (result.isErr()) {
+      console.error("Seed failed:", result.error)
       process.exit(1)
-   })
+   }
+   process.exit(0)
+}
+
+main()

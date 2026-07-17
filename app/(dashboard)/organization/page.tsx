@@ -1,11 +1,9 @@
+import { Suspense } from "react"
 import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query"
 import { OrganizationClient } from "@/features/organization/components/OrganizationClient"
-import { orgTreeQueryOptions } from "@/features/organization/api/query-options"
 
 export default async function OrganizationPage() {
    const queryClient = new QueryClient()
-
-   await queryClient.prefetchQuery(orgTreeQueryOptions())
 
    return (
       <HydrationBoundary state={dehydrate(queryClient)}>
@@ -16,7 +14,9 @@ export default async function OrganizationPage() {
                   View your organization&apos;s reporting structure
                </p>
             </div>
-            <OrganizationClient />
+            <Suspense fallback={<div className="h-96 animate-pulse rounded-lg bg-muted" />}>
+               <OrganizationClient />
+            </Suspense>
          </div>
       </HydrationBoundary>
    )

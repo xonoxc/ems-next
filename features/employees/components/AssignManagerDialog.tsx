@@ -1,6 +1,14 @@
 "use client"
 
 import { useState } from "react"
+import {
+   Dialog,
+   DialogContent,
+   DialogDescription,
+   DialogFooter,
+   DialogHeader,
+   DialogTitle,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import type { Employee } from "@/features/employees/types"
 import { EmployeeAvatar } from "./EmployeeAvatar"
@@ -27,28 +35,29 @@ export function AssignManagerDialog({
    const filteredManagers = managers.filter(m => m.id !== employee.id)
 
    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-         <div className="w-full max-w-md rounded-lg bg-background p-6 shadow-lg">
-            <h2 className="text-lg font-semibold">Assign Manager</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-               Select a manager for{" "}
-               <strong>
-                  {employee.firstName} {employee.lastName}
-               </strong>
-            </p>
+      <Dialog open onOpenChange={open => !open && onCancel()}>
+         <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+               <DialogTitle>Assign Manager</DialogTitle>
+               <DialogDescription>
+                  Select a manager for {employee.firstName} {employee.lastName}
+               </DialogDescription>
+            </DialogHeader>
 
-            <div className="mt-4 max-h-60 space-y-1 overflow-y-auto">
-               <button
+            <div className="max-h-60 space-y-1 overflow-y-auto scrollbar-thin">
+               <Button
+                  variant="ghost"
                   onClick={() => setSelectedManagerId("")}
-                  className={`w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-muted ${!selectedManagerId ? "bg-muted" : ""}`}
+                  className={`w-full justify-start ${!selectedManagerId ? "bg-muted" : ""}`}
                >
                   None (No Manager)
-               </button>
+               </Button>
                {filteredManagers.map(m => (
-                  <button
+                  <Button
                      key={m.id}
+                     variant="ghost"
                      onClick={() => setSelectedManagerId(m.id)}
-                     className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm hover:bg-muted ${selectedManagerId === m.id ? "bg-muted" : ""}`}
+                     className={`w-full justify-start gap-3 ${selectedManagerId === m.id ? "bg-muted" : ""}`}
                   >
                      <EmployeeAvatar
                         src={m.profileImage}
@@ -64,11 +73,11 @@ export function AssignManagerDialog({
                            {m.designation} &middot; {m.department}
                         </p>
                      </div>
-                  </button>
+                  </Button>
                ))}
             </div>
 
-            <div className="mt-4 flex justify-end gap-3">
+            <DialogFooter>
                <Button variant="outline" onClick={onCancel}>
                   Cancel
                </Button>
@@ -78,8 +87,8 @@ export function AssignManagerDialog({
                >
                   {isPending ? "Assigning..." : "Assign"}
                </Button>
-            </div>
-         </div>
-      </div>
+            </DialogFooter>
+         </DialogContent>
+      </Dialog>
    )
 }
