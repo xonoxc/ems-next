@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useEffectEvent } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useEmployees } from "./queries/useEmployees"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
-import { employeesQueryOptions } from "@/features/employees/api/query-options"
+import { employeesQueryOptions, employeeQueryOptions } from "@/features/employees/api/query-options"
 import { useCreateEmployee } from "./mutations/useCreateEmployee"
 import { useUpdateEmployee } from "./mutations/useUpdateEmployee"
 import { useDeleteEmployee } from "./mutations/useDeleteEmployee"
@@ -114,14 +114,27 @@ export function useEmployeesScreen() {
 
    const queryClient = useQueryClient()
 
-   useEffect(() => {
+   const prefetchNextPage = useEffectEvent(() => {
       if (totalPages > 1 && filters.page < totalPages) {
          queryClient.prefetchQuery(
             employeesQueryOptions({ ...queryParams, page: filters.page + 1 })
          )
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+   })
+
+   useEffect(() => {
+      prefetchNextPage()
    }, [filters.page, totalPages])
+
+   const prefetchVisibleDetails = useEffectEvent(() => {
+      Promise.all(
+         result.data.items.map(emp => queryClient.prefetchQuery(employeeQueryOptions(emp.id)))
+      )
+   })
+
+   useEffect(() => {
+      prefetchVisibleDetails()
+   }, [result.data])
 
    return {
       query: result,
