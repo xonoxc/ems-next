@@ -67,7 +67,6 @@ export function EmployeeListClient() {
                      page={params.page}
                      totalPages={totalPages}
                      total={query.data.total}
-                     params={params}
                      onPageChange={setPage}
                   />
                </>

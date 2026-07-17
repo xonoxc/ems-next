@@ -1,47 +1,13 @@
 import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query"
 import { EmployeeListClient } from "./client"
-import { EmployeeService } from "@/features/employees/server/service"
-import { requireSession, getUserRole } from "@/lib/auth"
-import { filterFields } from "@/server/auth/authorization"
+import { employeesQueryOptions } from "@/features/employees/api/query-options"
 
-import type { Employee } from "@/features/employees/types"
+const defaultParams = { page: 1, pageSize: 10, sortBy: "createdAt", sortOrder: "desc" }
 
 export default async function EmployeesPage() {
    const queryClient = new QueryClient()
 
-   const sessionResult = await requireSession()
-   await sessionResult.match(
-      async session => {
-         const result = await EmployeeService.findMany({
-            page: 1,
-            pageSize: 10,
-            sortBy: "createdAt",
-            sortOrder: "desc",
-         })
-         result.match(
-            data => {
-               const role = getUserRole(session)
-               const filteredItems = data.items.map(
-                  emp => filterFields(emp as Record<string, unknown>, role, false) as Employee
-               )
-               queryClient.setQueryData(
-                  [
-                     "employees",
-                     {
-                        page: 1,
-                        pageSize: 10,
-                        sortBy: "createdAt",
-                        sortOrder: "desc",
-                     },
-                  ],
-                  { ...data, items: filteredItems }
-               )
-            },
-            () => {}
-         )
-      },
-      () => {}
-   )
+   await queryClient.prefetchQuery(employeesQueryOptions(defaultParams))
 
    return (
       <HydrationBoundary state={dehydrate(queryClient)}>

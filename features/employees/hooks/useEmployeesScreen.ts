@@ -1,8 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { useEmployees } from "./queries/useEmployees"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
+import { employeesQueryOptions } from "@/features/employees/api/query-options"
 import { useCreateEmployee } from "./mutations/useCreateEmployee"
 import { useUpdateEmployee } from "./mutations/useUpdateEmployee"
 import { useDeleteEmployee } from "./mutations/useDeleteEmployee"
@@ -108,12 +110,24 @@ export function useEmployeesScreen() {
 
    const queryParams = { ...filters, search: debouncedSearch || undefined }
    const result = useEmployees(queryParams)
+   const totalPages = Math.ceil((result.data?.total ?? 0) / filters.pageSize)
+
+   const queryClient = useQueryClient()
+
+   useEffect(() => {
+      if (totalPages > 1 && filters.page < totalPages) {
+         queryClient.prefetchQuery(
+            employeesQueryOptions({ ...queryParams, page: filters.page + 1 })
+         )
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [filters.page, totalPages])
 
    return {
       query: result,
       params: { ...filters, search: debouncedSearch || undefined },
       search,
-      totalPages: Math.ceil((result.data?.total ?? 0) / filters.pageSize),
+      totalPages,
       setSearch,
       setDepartment,
       setStatus,
