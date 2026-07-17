@@ -136,6 +136,6 @@
       @apply bg-background text-foreground;
    }
    html {
-      @apply font-sans text-[13px];
+      @apply font-sans text-[14px];
    }
 }

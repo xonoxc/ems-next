@@ -1,5 +1,12 @@
 import { Search, X } from "lucide-react"
 import { DEPARTMENTS, STATUSES } from "@/features/employees/constants"
+import {
+   Select,
+   SelectContent,
+   SelectItem,
+   SelectTrigger,
+   SelectValue,
+} from "@/components/ui/select"
 
 interface EmployeeFiltersProps {
    search: string
@@ -35,31 +42,31 @@ export function EmployeeFilters({
             />
          </div>
 
-         <select
-            value={department}
-            onChange={e => onDepartmentChange(e.target.value)}
-            className="rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-         >
-            <option value="">All Departments</option>
-            {DEPARTMENTS.map(dept => (
-               <option key={dept} value={dept}>
-                  {dept}
-               </option>
-            ))}
-         </select>
+         <Select value={department} onValueChange={v => onDepartmentChange(v ?? "")}>
+            <SelectTrigger className="w-[180px]">
+               <SelectValue placeholder="All Departments" />
+            </SelectTrigger>
+            <SelectContent>
+               {DEPARTMENTS.map(dept => (
+                  <SelectItem key={dept} value={dept}>
+                     {dept}
+                  </SelectItem>
+               ))}
+            </SelectContent>
+         </Select>
 
-         <select
-            value={status}
-            onChange={e => onStatusChange(e.target.value)}
-            className="rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-         >
-            <option value="">All Statuses</option>
-            {STATUSES.map(s => (
-               <option key={s} value={s}>
-                  {s.charAt(0).toUpperCase() + s.slice(1)}
-               </option>
-            ))}
-         </select>
+         <Select value={status} onValueChange={v => onStatusChange(v ?? "")}>
+            <SelectTrigger className="w-[180px]">
+               <SelectValue placeholder="All Statuses" />
+            </SelectTrigger>
+            <SelectContent>
+               {STATUSES.map(s => (
+                  <SelectItem key={s} value={s}>
+                     {s.charAt(0).toUpperCase() + s.slice(1)}
+                  </SelectItem>
+               ))}
+            </SelectContent>
+         </Select>
 
          {hasActiveFilters && (
             <button
