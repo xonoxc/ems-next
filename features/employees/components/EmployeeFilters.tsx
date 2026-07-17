@@ -1,4 +1,4 @@
-import { Search, X } from "lucide-react"
+import { Search, X, Loader2 } from "lucide-react"
 import { DEPARTMENTS, STATUSES } from "@/features/employees/constants"
 import {
    Select,
@@ -17,6 +17,7 @@ interface EmployeeFiltersProps {
    onStatusChange: (value: string) => void
    onReset: () => void
    hasActiveFilters: boolean
+   isFetching?: boolean
 }
 
 export function EmployeeFilters({
@@ -28,6 +29,7 @@ export function EmployeeFilters({
    onStatusChange,
    onReset,
    hasActiveFilters,
+   isFetching,
 }: EmployeeFiltersProps) {
    return (
       <div className="flex flex-wrap items-center gap-3">
@@ -38,8 +40,11 @@ export function EmployeeFilters({
                placeholder="Search employees..."
                value={search}
                onChange={e => onSearchChange(e.target.value)}
-               className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+               className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-8 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
+            {isFetching && search && (
+               <Loader2 className="absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 animate-spin text-muted-foreground" />
+            )}
          </div>
 
          <Select value={department} onValueChange={v => onDepartmentChange(v ?? "")}>

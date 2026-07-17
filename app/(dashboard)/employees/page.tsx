@@ -2,7 +2,7 @@ import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query
 import { EmployeeListClient } from "./client"
 import { employeesQueryOptions } from "@/features/employees/api/query-options"
 
-const defaultParams = { page: 1, pageSize: 10, sortBy: "createdAt", sortOrder: "desc" }
+const defaultParams = { page: 1, pageSize: 10, sortBy: "createdAt", sortOrder: "desc" as const }
 
 export default async function EmployeesPage() {
    const queryClient = new QueryClient()

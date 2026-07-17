@@ -1,5 +1,7 @@
-import { Sidebar } from "@/components/shared/sidebar"
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/app-sidebar"
 import { Toaster } from "@/components/ui/sonner"
+import { Separator } from "@/components/ui/separator"
 
 export default function DashboardLayout({
    children,
@@ -7,12 +9,16 @@ export default function DashboardLayout({
    children: React.ReactNode
 }>) {
    return (
-      <>
-         <div className="flex h-full">
-            <Sidebar />
-            <main className="flex-1 overflow-y-auto bg-muted/50">{children}</main>
-         </div>
+      <SidebarProvider>
+         <AppSidebar />
+         <SidebarInset>
+            <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
+               <SidebarTrigger className="-ml-1" />
+               <Separator orientation="vertical" className="mr-2 h-4" />
+            </header>
+            <main className="flex-1 overflow-y-auto bg-muted p-6">{children}</main>
+         </SidebarInset>
          <Toaster />
-      </>
+      </SidebarProvider>
    )
 }

@@ -10,7 +10,6 @@ import { EmployeeTableSkeleton } from "@/features/employees/components/EmployeeS
 import { useEmployeesScreen } from "@/features/employees/hooks/useEmployeesScreen"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
-import { Suspense } from "react"
 
 export function EmployeeListClient() {
    const {
@@ -18,6 +17,8 @@ export function EmployeeListClient() {
       params,
       search,
       totalPages,
+      isLoading,
+      isFetching,
       setSearch,
       setDepartment,
       setStatus,
@@ -48,6 +49,7 @@ export function EmployeeListClient() {
                onStatusChange={setStatus}
                onReset={resetFilters}
                hasActiveFilters={hasActiveFilters}
+               isFetching={isFetching}
             />
             <Button onClick={() => setShowForm(true)}>
                <Plus className="mr-2 size-4" />
@@ -55,25 +57,25 @@ export function EmployeeListClient() {
             </Button>
          </div>
 
-         <Suspense fallback={<EmployeeTableSkeleton />}>
-            {query.data && query.data.items.length > 0 ? (
-               <>
-                  <EmployeeTable
-                     employees={query.data.items}
-                     onEdit={emp => setEditingEmployee(emp)}
-                     onDelete={emp => setDeletingEmployee(emp)}
-                  />
-                  <EmployeePagination
-                     page={params.page}
-                     totalPages={totalPages}
-                     total={query.data.total}
-                     onPageChange={setPage}
-                  />
-               </>
-            ) : (
-               <EmployeeEmptyState hasFilters={hasActiveFilters} />
-            )}
-         </Suspense>
+         {isLoading ? (
+            <EmployeeTableSkeleton />
+         ) : query.data && query.data.items.length > 0 ? (
+            <div>
+               <EmployeeTable
+                  employees={query.data.items}
+                  onEdit={emp => setEditingEmployee(emp)}
+                  onDelete={emp => setDeletingEmployee(emp)}
+               />
+               <EmployeePagination
+                  page={params.page}
+                  totalPages={totalPages}
+                  total={query.data.total}
+                  onPageChange={setPage}
+               />
+            </div>
+         ) : (
+            <EmployeeEmptyState hasFilters={hasActiveFilters} />
+         )}
 
          {(showForm || editingEmployee) && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">

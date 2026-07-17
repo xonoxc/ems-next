@@ -127,6 +127,7 @@ export function useEmployeesScreen() {
    }, [filters.page, totalPages])
 
    const prefetchVisibleDetails = useEffectEvent(() => {
+      if (!result.data) return
       Promise.all(
          result.data.items.map(emp => queryClient.prefetchQuery(employeeQueryOptions(emp.id)))
       )
@@ -141,6 +142,8 @@ export function useEmployeesScreen() {
       params: { ...filters, search: debouncedSearch || undefined },
       search,
       totalPages,
+      isLoading: result.isLoading,
+      isFetching: result.isFetching,
       setSearch,
       setDepartment,
       setStatus,
