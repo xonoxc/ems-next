@@ -19,7 +19,12 @@ export async function GET(request: Request) {
             data => {
                const role = getUserRole(session)
                const filteredItems = data.items.map(
-                  emp => filterFields(emp as Record<string, unknown>, role, false) as Employee
+                  emp =>
+                     filterFields(
+                        emp as Record<string, unknown>,
+                        role,
+                        emp.userId === session.user.id
+                     ) as Employee
                )
                return Response.json({ ...data, items: filteredItems })
             },

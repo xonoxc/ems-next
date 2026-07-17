@@ -16,17 +16,23 @@ export function useEmployeeScreen(id: string) {
    const [editing, setEditing] = useState(false)
    const [deleting, setDeleting] = useState(false)
 
-   const updateMutation = useUpdateEmployee(id)
+   const updateMutation = useUpdateEmployee()
    const deleteMutation = useDeleteEmployee()
 
    const handleUpdate = async (data: CreateEmployeeInput) => {
-      const result = await attempt(updateMutation.mutateAsync(data))
+      const result = await attempt(updateMutation.mutateAsync({ id, data }))
       result.match(
          () => {
             toast.success("Employee updated")
             setEditing(false)
          },
-         err => toast.error(err instanceof Error ? err.message : "Failed to update")
+         err => {
+            const message =
+               typeof err === "object" && err !== null && "message" in err
+                  ? String((err as { message: unknown }).message)
+                  : "Failed to update"
+            toast.error(message)
+         }
       )
    }
 
@@ -37,7 +43,13 @@ export function useEmployeeScreen(id: string) {
             toast.success("Employee deleted")
             router.push("/employees")
          },
-         err => toast.error(err instanceof Error ? err.message : "Failed to delete")
+         err => {
+            const message =
+               typeof err === "object" && err !== null && "message" in err
+                  ? String((err as { message: unknown }).message)
+                  : "Failed to delete"
+            toast.error(message)
+         }
       )
    }
 

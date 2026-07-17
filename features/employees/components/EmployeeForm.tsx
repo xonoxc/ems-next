@@ -19,8 +19,8 @@ const EmployeeFormSchema = z.object({
    salary: z.string().min(1, "Salary is required"),
    joiningDate: z.string().min(1, "Joining date is required"),
    status: z.string().min(1, "Status is required"),
-   managerId: z.string().optional(),
-   profileImage: z.string().optional(),
+   managerId: z.string().uuid("Must be a valid employee ID").optional().or(z.literal("")),
+   profileImage: z.string().url("Must be a valid URL").optional().or(z.literal("")),
 })
 
 type EmployeeFormValues = z.input<typeof EmployeeFormSchema>

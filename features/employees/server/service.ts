@@ -1,8 +1,9 @@
 import { EmployeeRepository } from "./repository"
-import { auditLogs } from "@/server/db/schema"
+import { employees, auditLogs } from "@/server/db/schema"
 import { db } from "@/lib/db"
 import { attempt } from "@/lib/errors"
-import { err } from "neverthrow"
+import { err, ok } from "neverthrow"
+import { and, eq, isNull } from "drizzle-orm"
 import { type Result } from "neverthrow"
 import type {
    CreateEmployeeInput,
@@ -17,23 +18,6 @@ export type ServiceError = { status: number; message: string }
 
 function svcErr(message: string, status = 400): ServiceError {
    return { status, message }
-}
-
-function createAuditLog(
-   actorId: string,
-   action: string,
-   entityId: string,
-   metadata?: Record<string, unknown>
-) {
-   return attempt(
-      db.insert(auditLogs).values({
-         actorId,
-         action,
-         entityType: "employee",
-         entityId,
-         metadata: metadata ?? {},
-      })
-   )
 }
 
 export const EmployeeService = {
@@ -65,11 +49,50 @@ export const EmployeeService = {
          }
       }
 
-      const result = await EmployeeRepository.create(data)
-      if (result.isOk()) {
-         await createAuditLog(actorId, "created", result.value.id)
+      const txResult = await attempt(
+         db.transaction(async tx => {
+            const employeeId = `EMP${String(Date.now()).slice(-6)}${Math.random().toString(36).slice(2, 4).toUpperCase()}`
+            const [emp] = await tx
+               .insert(employees)
+               .values({
+                  employeeId,
+                  firstName: data.firstName,
+                  lastName: data.lastName,
+                  email: data.email,
+                  phone: data.phone ?? null,
+                  department: data.department,
+                  designation: data.designation,
+                  salary: String(data.salary),
+                  joiningDate: new Date(data.joiningDate),
+                  status: data.status ?? "active",
+                  managerId: data.managerId ?? null,
+                  profileImage: data.profileImage ?? null,
+               })
+               .returning()
+
+            if (!emp) throw new Error("Failed to create employee")
+
+            await tx.insert(auditLogs).values({
+               actorId,
+               action: "created",
+               entityType: "employee",
+               entityId: emp.id,
+               metadata: {},
+            })
+
+            return emp
+         })
+      )
+
+      if (txResult.isErr()) {
+         const error = txResult.error
+         if (error instanceof Error && error.message === "Failed to create employee") {
+            return err(svcErr(error.message))
+         }
+         return err(svcErr("Database error"))
       }
-      return result.mapErr(e => ({ status: e.status, message: e.message }) as ServiceError)
+
+      return ok(txResult.value)
    },
 
    async update(
@@ -99,12 +122,53 @@ export const EmployeeService = {
          }
       }
 
-      const result = await EmployeeRepository.update(id, data)
-      if (result.isOk()) {
-         const changedFields = Object.keys(data)
-         await createAuditLog(actorId, "updated", id, { fields: changedFields })
+      const values: Record<string, unknown> = {}
+      if (data.firstName !== undefined) values.firstName = data.firstName
+      if (data.lastName !== undefined) values.lastName = data.lastName
+      if (data.email !== undefined) values.email = data.email
+      if (data.phone !== undefined) values.phone = data.phone
+      if (data.department !== undefined) values.department = data.department
+      if (data.designation !== undefined) values.designation = data.designation
+      if (data.salary !== undefined) values.salary = String(data.salary)
+      if (data.joiningDate !== undefined) values.joiningDate = new Date(data.joiningDate)
+      if (data.status !== undefined) values.status = data.status
+      if (data.managerId !== undefined) values.managerId = data.managerId
+      if (data.profileImage !== undefined) values.profileImage = data.profileImage
+      values.updatedAt = new Date()
+
+      const changedFields = Object.keys(data)
+
+      const txResult = await attempt(
+         db.transaction(async tx => {
+            const [emp] = await tx
+               .update(employees)
+               .set(values)
+               .where(and(eq(employees.id, id), isNull(employees.deletedAt)))
+               .returning()
+
+            if (!emp) throw new Error("Employee not found")
+
+            await tx.insert(auditLogs).values({
+               actorId,
+               action: "updated",
+               entityType: "employee",
+               entityId: id,
+               metadata: { fields: changedFields },
+            })
+
+            return emp
+         })
+      )
+
+      if (txResult.isErr()) {
+         const error = txResult.error
+         if (error instanceof Error && error.message === "Employee not found") {
+            return err(svcErr(error.message, 404))
+         }
+         return err(svcErr("Database error"))
       }
-      return result.mapErr(e => ({ status: e.status, message: e.message }) as ServiceError)
+
+      return ok(txResult.value)
    },
 
    async softDelete(id: string, actorId: string): Promise<Result<Employee, ServiceError>> {
@@ -113,40 +177,37 @@ export const EmployeeService = {
          return err(svcErr("Employee not found", 404))
       }
 
-      const result = await EmployeeRepository.softDelete(id)
-      if (result.isOk()) {
-         await createAuditLog(actorId, "deleted", id)
-      }
-      return result.mapErr(e => ({ status: e.status, message: e.message }) as ServiceError)
-   },
+      const txResult = await attempt(
+         db.transaction(async tx => {
+            const [emp] = await tx
+               .update(employees)
+               .set({ deletedAt: new Date(), updatedAt: new Date() })
+               .where(and(eq(employees.id, id), isNull(employees.deletedAt)))
+               .returning()
 
-   async assignManager(
-      employeeId: string,
-      managerId: string,
-      actorId: string
-   ): Promise<Result<Employee, ServiceError>> {
-      if (employeeId === managerId) {
-         return err(svcErr("An employee cannot be their own manager"))
-      }
+            if (!emp) throw new Error("Employee not found")
 
-      const employee = await EmployeeRepository.findById(employeeId)
-      if (employee.isErr()) {
-         return err(svcErr("Employee not found", 404))
-      }
+            await tx.insert(auditLogs).values({
+               actorId,
+               action: "deleted",
+               entityType: "employee",
+               entityId: id,
+               metadata: {},
+            })
 
-      const manager = await EmployeeRepository.findById(managerId)
-      if (manager.isErr()) {
-         return err(svcErr("Manager not found", 404))
-      }
-
-      const result = await EmployeeRepository.assignManager(employeeId, managerId)
-      if (result.isOk()) {
-         await createAuditLog(actorId, "manager_changed", employeeId, {
-            previousManagerId: employee.value.managerId,
-            newManagerId: managerId,
+            return emp
          })
+      )
+
+      if (txResult.isErr()) {
+         const error = txResult.error
+         if (error instanceof Error && error.message === "Employee not found") {
+            return err(svcErr(error.message, 404))
+         }
+         return err(svcErr("Database error"))
       }
-      return result.mapErr(e => ({ status: e.status, message: e.message }) as ServiceError)
+
+      return ok(txResult.value)
    },
 
    async findReportees(managerId: string): Promise<Result<Employee[], ServiceError>> {

@@ -12,7 +12,14 @@ export const CreateEmployeeSchema = z.object({
    joiningDate: z.coerce.date({ error: "Joining date is required" }),
    status: z.enum(STATUSES).default("active"),
    managerId: z.string().uuid().optional(),
-   profileImage: z.string().optional(),
+   profileImage: z
+      .string()
+      .url("Must be a valid URL")
+      .refine(
+         val => val.startsWith("http://") || val.startsWith("https://"),
+         "Must be an HTTP(S) URL"
+      )
+      .optional(),
 })
 
 export const UpdateEmployeeSchema = CreateEmployeeSchema.partial()
@@ -25,6 +32,11 @@ export const EmployeeQuerySchema = z.object({
    status: z.enum(STATUSES).optional(),
    sortBy: z.string().default("createdAt"),
    sortOrder: z.enum(["asc", "desc"]).default("desc"),
+})
+
+export const AssignManagerSchema = z.object({
+   employeeId: z.string().uuid("Invalid employee ID"),
+   managerId: z.string().uuid("Invalid manager ID"),
 })
 
 export type CreateEmployeeInput = z.infer<typeof CreateEmployeeSchema>

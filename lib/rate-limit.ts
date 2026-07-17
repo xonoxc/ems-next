@@ -5,6 +5,18 @@ interface TokenBucket {
 
 const buckets = new Map<string, TokenBucket>()
 
+const CLEANUP_INTERVAL = 60_000
+const MAX_AGE = 300_000
+
+setInterval(() => {
+   const now = Date.now()
+   for (const [key, bucket] of buckets) {
+      if (now - bucket.lastRefill > MAX_AGE) {
+         buckets.delete(key)
+      }
+   }
+}, CLEANUP_INTERVAL)
+
 export interface RateLimitResult {
    allowed: boolean
    retryAfter: number | null

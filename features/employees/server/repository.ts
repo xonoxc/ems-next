@@ -18,6 +18,10 @@ function repoErr(message: string, status = 500): RepositoryError {
    return { status, message }
 }
 
+function escapeLike(input: string): string {
+   return input.replace(/%/g, "\\%").replace(/_/g, "\\_")
+}
+
 export const EmployeeRepository = {
    async findById(id: string): Promise<Result<Employee, RepositoryError>> {
       const result = await attempt(
@@ -50,12 +54,13 @@ export const EmployeeRepository = {
       const conditions = [isNull(employees.deletedAt)]
 
       if (search) {
+         const escaped = escapeLike(search)
          conditions.push(
             or(
-               ilike(employees.firstName, `%${search}%`),
-               ilike(employees.lastName, `%${search}%`),
-               ilike(employees.email, `%${search}%`),
-               ilike(employees.employeeId, `%${search}%`)
+               ilike(employees.firstName, `%${escaped}%`),
+               ilike(employees.lastName, `%${escaped}%`),
+               ilike(employees.email, `%${escaped}%`),
+               ilike(employees.employeeId, `%${escaped}%`)
             )!
          )
       }
@@ -97,30 +102,33 @@ export const EmployeeRepository = {
    },
 
    async create(data: CreateEmployeeInput): Promise<Result<Employee, RepositoryError>> {
-      const employeeId = `EMP${String(Date.now()).slice(-6)}`
-      const result = await attempt(
-         db
-            .insert(employees)
-            .values({
-               employeeId,
-               firstName: data.firstName,
-               lastName: data.lastName,
-               email: data.email,
-               phone: data.phone ?? null,
-               department: data.department,
-               designation: data.designation,
-               salary: String(data.salary),
-               joiningDate: new Date(data.joiningDate),
-               status: data.status ?? "active",
-               managerId: data.managerId ?? null,
-               profileImage: data.profileImage ?? null,
-            })
-            .returning()
-      )
-      return result.match(
-         ([emp]) => (emp ? ok(emp) : err(repoErr("Failed to create employee"))),
-         () => err(repoErr("Database error"))
-      )
+      for (let attemptCount = 0; attemptCount < 3; attemptCount++) {
+         const employeeId = `EMP${String(Date.now()).slice(-6)}${Math.random().toString(36).slice(2, 4).toUpperCase()}`
+         const result = await attempt(
+            db
+               .insert(employees)
+               .values({
+                  employeeId,
+                  firstName: data.firstName,
+                  lastName: data.lastName,
+                  email: data.email,
+                  phone: data.phone ?? null,
+                  department: data.department,
+                  designation: data.designation,
+                  salary: String(data.salary),
+                  joiningDate: new Date(data.joiningDate),
+                  status: data.status ?? "active",
+                  managerId: data.managerId ?? null,
+                  profileImage: data.profileImage ?? null,
+               })
+               .returning()
+         )
+         return result.match(
+            ([emp]) => (emp ? ok(emp) : err(repoErr("Failed to create employee"))),
+            () => err(repoErr("Database error"))
+         )
+      }
+      return err(repoErr("Failed to generate unique employee ID"))
    },
 
    async update(id: string, data: UpdateEmployeeInput): Promise<Result<Employee, RepositoryError>> {

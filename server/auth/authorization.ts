@@ -11,16 +11,14 @@ export function hasPermission(
    permission: Permission,
    isSelf: boolean
 ): boolean {
-   const fieldPerm = FIELD_PERMISSIONS[field]
-   if (!fieldPerm) return false
-
-   const allowedRoles = fieldPerm[permission]
-   if (!allowedRoles.includes(role)) return false
-
    if (field === "phone" && permission === "write" && isSelf) {
       return true
    }
 
+   const fieldPerm = FIELD_PERMISSIONS[field]
+   if (!fieldPerm) return false
+
+   const allowedRoles = fieldPerm[permission]
    return allowedRoles.includes(role)
 }
 

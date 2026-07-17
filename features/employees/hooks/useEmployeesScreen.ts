@@ -30,7 +30,7 @@ export function useEmployeesScreen() {
    const [deletingEmployee, setDeletingEmployee] = useState<Employee | null>(null)
 
    const createMutation = useCreateEmployee()
-   const updateMutation = useUpdateEmployee("")
+   const updateMutation = useUpdateEmployee()
    const deleteMutation = useDeleteEmployee()
 
    const setSearch = (value: string) => {
@@ -78,19 +78,47 @@ export function useEmployeesScreen() {
             toast.success("Employee created successfully")
             setShowForm(false)
          },
-         err => toast.error((err as Error).message ?? "Failed to create employee")
+         err => {
+            const message =
+               typeof err === "object" && err !== null && "message" in err
+                  ? String((err as { message: unknown }).message)
+                  : "Failed to create employee"
+            toast.error(message)
+         }
       )
    }
 
    const handleUpdate = async (data: CreateEmployeeInput) => {
       if (!editingEmployee) return
-      const result = await attempt(updateMutation.mutateAsync(data))
+      const changed: Partial<CreateEmployeeInput> = {}
+      for (const [key, value] of Object.entries(data)) {
+         const currentValue = (editingEmployee as Record<string, unknown>)[key]
+         if (String(value) !== String(currentValue)) {
+            ;(changed as Record<string, unknown>)[key] = value
+         }
+      }
+      if (Object.keys(changed).length === 0) {
+         toast.info("No changes to save")
+         return
+      }
+      const result = await attempt(
+         updateMutation.mutateAsync({
+            id: editingEmployee.id,
+            data: changed as CreateEmployeeInput,
+         })
+      )
       result.match(
          () => {
             toast.success("Employee updated successfully")
             setEditingEmployee(null)
          },
-         err => toast.error((err as Error).message ?? "Failed to update employee")
+         err => {
+            const message =
+               typeof err === "object" && err !== null && "message" in err
+                  ? String((err as { message: unknown }).message)
+                  : "Failed to update employee"
+            toast.error(message)
+         }
       )
    }
 
@@ -102,7 +130,13 @@ export function useEmployeesScreen() {
             toast.success("Employee deleted successfully")
             setDeletingEmployee(null)
          },
-         err => toast.error((err as Error).message ?? "Failed to delete employee")
+         err => {
+            const message =
+               typeof err === "object" && err !== null && "message" in err
+                  ? String((err as { message: unknown }).message)
+                  : "Failed to delete employee"
+            toast.error(message)
+         }
       )
    }
 

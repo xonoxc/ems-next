@@ -1,9 +1,10 @@
 import { OrganizationRepository, type OrgTreeNode } from "./repository"
 import { EmployeeRepository } from "@/features/employees/server/repository"
-import { auditLogs } from "@/server/db/schema"
+import { employees, auditLogs } from "@/server/db/schema"
 import { db } from "@/lib/db"
 import { attempt } from "@/lib/errors"
 import { err, ok, type Result } from "neverthrow"
+import { and, eq, isNull } from "drizzle-orm"
 
 export type ServiceError = { status: number; message: string }
 
@@ -45,23 +46,29 @@ export const OrganizationService = {
          return err(svcErr("This assignment would create a circular hierarchy"))
       }
 
-      const assignResult = await EmployeeRepository.assignManager(employeeId, managerId)
-      if (assignResult.isErr()) {
-         return err(svcErr(assignResult.error.message, assignResult.error.status))
-      }
+      const txResult = await attempt(
+         db.transaction(async tx => {
+            await tx
+               .update(employees)
+               .set({ managerId, updatedAt: new Date() })
+               .where(and(eq(employees.id, employeeId), isNull(employees.deletedAt)))
 
-      await attempt(
-         db.insert(auditLogs).values({
-            actorId,
-            action: "manager_changed",
-            entityType: "employee",
-            entityId: employeeId,
-            metadata: {
-               previousManagerId: employee.value.managerId,
-               newManagerId: managerId,
-            },
+            await tx.insert(auditLogs).values({
+               actorId,
+               action: "manager_changed",
+               entityType: "employee",
+               entityId: employeeId,
+               metadata: {
+                  previousManagerId: employee.value.managerId,
+                  newManagerId: managerId,
+               },
+            })
          })
       )
+
+      if (txResult.isErr()) {
+         return err(svcErr("Database error"))
+      }
 
       return ok(undefined)
    },
