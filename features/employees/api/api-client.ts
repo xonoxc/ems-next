@@ -33,6 +33,7 @@ export const EmployeeApiClient = {
       if (params.search) searchParams.set("search", params.search)
       if (params.department) searchParams.set("department", params.department)
       if (params.status) searchParams.set("status", params.status)
+      if (params.role) searchParams.set("role", params.role)
       if (params.sortBy) searchParams.set("sortBy", params.sortBy)
       if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder)
 

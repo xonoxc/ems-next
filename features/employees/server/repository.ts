@@ -96,13 +96,15 @@ export const EmployeeRepository = {
 
       const itemsResult = await attempt(
          needsUserJoin
-            ? db.query.employees.findMany({
-                 where,
-                 orderBy,
-                 limit: pageSize,
-                 offset,
-                 with: { user: true },
-              })
+            ? db
+                 .select()
+                 .from(employees)
+                 .innerJoin(users, eq(employees.userId, users.id))
+                 .where(where)
+                 .orderBy(orderBy)
+                 .limit(pageSize)
+                 .offset(offset)
+                 .then(rows => rows.map(r => r.employees))
             : db.query.employees.findMany({ where, orderBy, limit: pageSize, offset })
       )
       const totalResult = await attempt(

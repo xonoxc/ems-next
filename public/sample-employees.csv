@@ -1,0 +1,11 @@
+firstName,lastName,email,phone,department,designation,salary,joiningDate,status
+Alice,Johnson,alice.johnson@example.com,+1555000001,Engineering,Software Engineer,95000,2024-03-01,active
+Bob,Smith,bob.smith@example.com,+1555000002,Marketing,Marketing Specialist,72000,2024-02-15,active
+Charlie,Brown,charlie.brown@example.com,+1555000003,Sales,Sales Representative,68000,2024-01-20,active
+Diana,Lopez,diana.lopez@example.com,+1555000004,Finance,Financial Analyst,88000,2023-11-10,active
+Eve,Wilson,eve.wilson@example.com,+1555000005,HR,HR Coordinator,65000,2024-04-05,active
+Frank,Chen,frank.chen@example.com,+1555000006,Engineering,Senior Software Engineer,120000,2023-09-01,active
+Grace,Kim,grace.kim@example.com,+1555000007,Operations,Operations Manager,92000,2024-01-08,inactive
+Hank,Miller,hank.miller@example.com,+1555000008,Engineering,Tech Lead,135000,2023-06-15,active
+Ivy,Davis,ivy.davis@example.com,+1555000009,Marketing,Marketing Manager,98000,2023-08-20,active
+Jack,Taylor,jack.taylor@example.com,+1555000010,Sales,Sales Manager,105000,2023-07-01,active

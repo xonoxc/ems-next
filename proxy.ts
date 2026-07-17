@@ -10,7 +10,7 @@ function isPublicPath(pathname: string): boolean {
 export function proxy(request: NextRequest) {
    const { pathname } = request.nextUrl
 
-   if (pathname.startsWith("/_next/")) {
+   if (pathname.startsWith("/_next/") || pathname.includes(".")) {
       return NextResponse.next()
    }
 

@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { LoginSchema, type LoginInput } from "@/features/auth/schemas"
 import { useSession } from "@/features/auth/hooks"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect } from "react"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button"
 
 export default function LoginPage() {
    const router = useRouter()
+   const searchParams = useSearchParams()
    const { session, isPending: sessionLoading, signIn } = useSession()
    const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -25,6 +26,10 @@ export default function LoginPage() {
       formState: { errors },
    } = useForm<LoginInput>({
       resolver: zodResolver(LoginSchema),
+      defaultValues: {
+         email: searchParams.get("email") ?? "",
+         password: searchParams.get("password") ?? "",
+      },
    })
 
    useEffect(() => {
