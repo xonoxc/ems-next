@@ -1,8 +1,11 @@
 "use client"
 
-import { useSuspenseQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { orgTreeQueryOptions } from "@/features/organization/api/query-options"
 
 export function useOrgTree() {
-   return useSuspenseQuery(orgTreeQueryOptions())
+   return useQuery({
+      ...orgTreeQueryOptions(),
+      placeholderData: keepPreviousData,
+   })
 }

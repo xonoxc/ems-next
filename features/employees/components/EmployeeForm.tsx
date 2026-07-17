@@ -14,6 +14,7 @@ import {
    SelectTrigger,
    SelectValue,
 } from "@/components/ui/select"
+import { ImageUpload } from "./ImageUpload"
 import type { Employee } from "@/features/employees/types"
 import type { CreateEmployeeInput } from "@/features/employees/types"
 
@@ -28,7 +29,7 @@ const EmployeeFormSchema = z.object({
    joiningDate: z.string({ error: "Joining date is needed" }).min(1),
    status: z.string({ error: "Status is needed" }).min(1),
    managerId: z.uuid({ error: "Must be a valid employee ID" }).optional().or(z.literal("")),
-   profileImage: z.url({ error: "Must be a valid URL" }).optional().or(z.literal("")),
+   profileImage: z.string().optional(),
 })
 
 export type EmployeeFormValues = z.input<typeof EmployeeFormSchema>
@@ -45,6 +46,8 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isSubmitting }: Emp
       register,
       handleSubmit,
       control,
+      watch,
+      setValue,
       formState: { errors },
    } = useForm<EmployeeFormValues>({
       resolver: zodResolver(EmployeeFormSchema),
@@ -61,8 +64,11 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isSubmitting }: Emp
             : "",
          status: (employee?.status as EmployeeFormValues["status"]) ?? "active",
          managerId: employee?.managerId ?? undefined,
+         profileImage: employee?.profileImage ?? undefined,
       },
    })
+
+   const profileImage = watch("profileImage")
 
    const handleSubmitForm = async (data: EmployeeFormValues) => {
       await onSubmit({
@@ -75,7 +81,7 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isSubmitting }: Emp
    return (
       <form onSubmit={handleSubmit(handleSubmitForm)} className="space-y-4">
          {Object.keys(errors).length > 0 && <p className="text-sm text-destructive">Required</p>}
-         <div className="grid grid-cols-2 gap-4">
+         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field data-invalid={!!errors.firstName}>
                <FieldLabel htmlFor="firstName">First Name</FieldLabel>
                <Input id="firstName" {...register("firstName")} aria-invalid={!!errors.firstName} />
@@ -94,7 +100,7 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isSubmitting }: Emp
             <FieldError errors={errors.email ? [errors.email] : undefined} />
          </Field>
 
-         <div className="grid grid-cols-2 gap-4">
+         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field data-invalid={!!errors.phone}>
                <FieldLabel htmlFor="phone">Phone</FieldLabel>
                <Input id="phone" {...register("phone")} aria-invalid={!!errors.phone} />
@@ -124,7 +130,7 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isSubmitting }: Emp
             </Field>
          </div>
 
-         <div className="grid grid-cols-2 gap-4">
+         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field data-invalid={!!errors.designation}>
                <FieldLabel>Designation</FieldLabel>
                <Controller
@@ -160,7 +166,7 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isSubmitting }: Emp
             </Field>
          </div>
 
-         <div className="grid grid-cols-2 gap-4">
+         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field data-invalid={!!errors.joiningDate}>
                <FieldLabel htmlFor="joiningDate">Joining Date</FieldLabel>
                <Input
@@ -194,6 +200,14 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isSubmitting }: Emp
                <FieldError errors={errors.status ? [errors.status] : undefined} />
             </Field>
          </div>
+
+         <Field>
+            <FieldLabel>Profile Image</FieldLabel>
+            <ImageUpload
+               value={profileImage}
+               onChange={val => setValue("profileImage", val ?? "")}
+            />
+         </Field>
 
          <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="outline" onClick={onCancel}>

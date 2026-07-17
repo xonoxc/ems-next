@@ -137,3 +137,40 @@ export async function assignManager(employeeId: string, managerId: string) {
 
    return result.value
 }
+
+export async function importEmployees(data: unknown[]) {
+   const sessionResult = await requireSession()
+   if (sessionResult.isErr()) throw svcErr(sessionResult.error.message, sessionResult.error.status)
+
+   const session = sessionResult.value
+   const role = getUserRole(session)
+   const roleResult = requireRole(["super_admin", "hr_manager"])(role)
+   if (roleResult.isErr()) throw svcErr(roleResult.error.message, roleResult.error.status)
+
+   const rl = rateLimit(`import:${session.user.id}`, 50, 60_000)
+   if (!rl.allowed) {
+      throw svcErr(`Rate limit exceeded. Try again in ${rl.retryAfter}s`, 429)
+   }
+
+   const results: { success: number; errors: { row: number; message: string }[] } = {
+      success: 0,
+      errors: [],
+   }
+
+   for (let i = 0; i < data.length; i++) {
+      const parsed = CreateEmployeeSchema.safeParse(data[i])
+      if (!parsed.success) {
+         results.errors.push({ row: i + 1, message: parsed.error.issues[0]?.message ?? "Invalid" })
+         continue
+      }
+
+      const createResult = await EmployeeService.create(parsed.data, session.user.id)
+      if (createResult.isErr()) {
+         results.errors.push({ row: i + 1, message: createResult.error.message })
+      } else {
+         results.success++
+      }
+   }
+
+   return results
+}

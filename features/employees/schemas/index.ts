@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { DEPARTMENTS, STATUSES } from "@/features/employees/constants"
+import { DEPARTMENTS, STATUSES, ROLES } from "@/features/employees/constants"
 
 export const CreateEmployeeSchema = z.object({
    firstName: z.string({ error: "First name is required" }).min(1).max(100),
@@ -12,13 +12,7 @@ export const CreateEmployeeSchema = z.object({
    joiningDate: z.coerce.date({ error: "Joining date is required" }),
    status: z.enum(STATUSES).default("active"),
    managerId: z.uuid().optional(),
-   profileImage: z
-      .url({ error: "Must be a valid URL" })
-      .refine(
-         val => val.startsWith("http://") || val.startsWith("https://"),
-         "Must be an HTTP(S) URL"
-      )
-      .optional(),
+   profileImage: z.string().optional(),
 })
 
 export const UpdateEmployeeSchema = CreateEmployeeSchema.partial()
@@ -29,6 +23,7 @@ export const EmployeeQuerySchema = z.object({
    search: z.string().optional(),
    department: z.enum(DEPARTMENTS).optional(),
    status: z.enum(STATUSES).optional(),
+   role: z.enum(ROLES).optional(),
    sortBy: z.string().default("createdAt"),
    sortOrder: z.enum(["asc", "desc"]).default("desc"),
 })

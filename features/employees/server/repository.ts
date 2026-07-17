@@ -1,5 +1,5 @@
 import { db } from "@/lib/db"
-import { employees } from "@/server/db/schema"
+import { employees, users } from "@/server/db/schema"
 import { attempt } from "@/lib/errors"
 import { ok, err, Result } from "neverthrow"
 import { and, asc, count, desc, eq, ilike, isNull, or } from "drizzle-orm"
@@ -50,7 +50,16 @@ export const EmployeeRepository = {
    async findMany(
       params: EmployeeQueryParams
    ): Promise<Result<PaginatedEmployees, RepositoryError>> {
-      const { page, pageSize, search, department, status: empStatus, sortBy, sortOrder } = params
+      const {
+         page,
+         pageSize,
+         search,
+         department,
+         status: empStatus,
+         role,
+         sortBy,
+         sortOrder,
+      } = params
       const conditions = [isNull(employees.deletedAt)]
 
       if (search) {
@@ -73,21 +82,42 @@ export const EmployeeRepository = {
          conditions.push(eq(employees.status, empStatus))
       }
 
+      if (role) {
+         conditions.push(eq(users.role, role))
+      }
+
       const where = and(...conditions)
       const offset = (page - 1) * pageSize
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const sortColumn = (employees as Record<string, any>)[sortBy] ?? employees.createdAt
       const orderBy = sortOrder === "asc" ? asc(sortColumn) : desc(sortColumn)
 
+      const needsUserJoin = !!role
+
       const itemsResult = await attempt(
-         db.query.employees.findMany({ where, orderBy, limit: pageSize, offset })
+         needsUserJoin
+            ? db.query.employees.findMany({
+                 where,
+                 orderBy,
+                 limit: pageSize,
+                 offset,
+                 with: { user: true },
+              })
+            : db.query.employees.findMany({ where, orderBy, limit: pageSize, offset })
       )
       const totalResult = await attempt(
-         db
-            .select({ value: count() })
-            .from(employees)
-            .where(where)
-            .then(r => r[0]?.value ?? 0)
+         needsUserJoin
+            ? db
+                 .select({ value: count() })
+                 .from(employees)
+                 .innerJoin(users, eq(employees.userId, users.id))
+                 .where(where)
+                 .then(r => r[0]?.value ?? 0)
+            : db
+                 .select({ value: count() })
+                 .from(employees)
+                 .where(where)
+                 .then(r => r[0]?.value ?? 0)
       )
 
       return Result.combine([itemsResult, totalResult])

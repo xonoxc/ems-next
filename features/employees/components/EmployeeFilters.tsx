@@ -1,5 +1,5 @@
 import { Search, X, Loader2 } from "lucide-react"
-import { DEPARTMENTS, STATUSES } from "@/features/employees/constants"
+import { DEPARTMENTS, STATUSES, ROLES } from "@/features/employees/constants"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -14,9 +14,11 @@ interface EmployeeFiltersProps {
    search: string
    department: string
    status: string
+   role: string
    onSearchChange: (value: string) => void
    onDepartmentChange: (value: string) => void
    onStatusChange: (value: string) => void
+   onRoleChange: (value: string) => void
    onReset: () => void
    hasActiveFilters: boolean
    isFetching?: boolean
@@ -26,9 +28,11 @@ export function EmployeeFilters({
    search,
    department,
    status,
+   role,
    onSearchChange,
    onDepartmentChange,
    onStatusChange,
+   onRoleChange,
    onReset,
    hasActiveFilters,
    isFetching,
@@ -70,6 +74,19 @@ export function EmployeeFilters({
                {STATUSES.map(s => (
                   <SelectItem key={s} value={s}>
                      {s.charAt(0).toUpperCase() + s.slice(1)}
+                  </SelectItem>
+               ))}
+            </SelectContent>
+         </Select>
+
+         <Select value={role} onValueChange={v => onRoleChange(v ?? "")}>
+            <SelectTrigger className="w-[180px]">
+               <SelectValue placeholder="All Roles" />
+            </SelectTrigger>
+            <SelectContent>
+               {ROLES.map(r => (
+                  <SelectItem key={r} value={r}>
+                     {r.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
                   </SelectItem>
                ))}
             </SelectContent>

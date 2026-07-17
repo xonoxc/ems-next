@@ -4,11 +4,9 @@ import { useState, useCallback } from "react"
 import { useOrganizationScreen } from "@/features/organization/hooks/useOrganizationScreen"
 import { OrgTree } from "@/features/organization/components/OrgTree"
 import { OrgTreeControls } from "@/features/organization/components/OrgTreeControls"
-import { OrgTreeSkeleton } from "@/features/organization/components/OrgTreeSkeleton"
-import { Suspense } from "react"
 
 export function OrganizationClient() {
-   const { data } = useOrganizationScreen()
+   const { data, query } = useOrganizationScreen()
    const [search, setSearch] = useState("")
    const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
    const [maxDepth, setMaxDepth] = useState(10)
@@ -37,7 +35,7 @@ export function OrganizationClient() {
    }, [])
 
    return (
-      <div className="space-y-4">
+      <div className={`space-y-4 ${query.isPending ? "opacity-60 pointer-events-none" : ""}`}>
          <OrgTreeControls
             search={search}
             onSearchChange={setSearch}
@@ -46,15 +44,13 @@ export function OrganizationClient() {
             onExpandAll={expandAll}
             onCollapseAll={collapseAll}
          />
-         <Suspense fallback={<OrgTreeSkeleton />}>
-            <OrgTree
-               nodes={data}
-               search={search}
-               expandedIds={expandedIds}
-               maxDepth={maxDepth}
-               onToggle={toggleNode}
-            />
-         </Suspense>
+         <OrgTree
+            nodes={data}
+            search={search}
+            expandedIds={expandedIds}
+            maxDepth={maxDepth}
+            onToggle={toggleNode}
+         />
       </div>
    )
 }

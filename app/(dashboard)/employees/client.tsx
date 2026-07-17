@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { EmployeeTable } from "@/features/employees/components/EmployeeTable"
 import { EmployeeFilters } from "@/features/employees/components/EmployeeFilters"
 import { EmployeePagination } from "@/features/employees/components/EmployeePagination"
@@ -7,11 +8,13 @@ import { EmployeeForm } from "@/features/employees/components/EmployeeForm"
 import { DeleteEmployeeDialog } from "@/features/employees/components/DeleteEmployeeDialog"
 import { EmployeeEmptyState } from "@/features/employees/components/EmployeeEmptyState"
 import { EmployeeTableSkeleton } from "@/features/employees/components/EmployeeSkeleton"
+import { CsvImportDialog } from "@/features/employees/components/CsvImportDialog"
 import { useEmployeesScreen } from "@/features/employees/hooks/useEmployeesScreen"
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { Plus, Upload } from "lucide-react"
 
 export function EmployeeListClient() {
+   const [showImport, setShowImport] = useState(false)
    const {
       query,
       params,
@@ -22,6 +25,9 @@ export function EmployeeListClient() {
       setSearch,
       setDepartment,
       setStatus,
+      setRole,
+      setSortBy,
+      setSortOrder,
       setPage,
       resetFilters,
       hasActiveFilters,
@@ -37,6 +43,15 @@ export function EmployeeListClient() {
       isSubmitting,
    } = useEmployeesScreen()
 
+   const handleSort = (field: string) => {
+      if (params.sortBy === field) {
+         setSortOrder(params.sortOrder === "asc" ? "desc" : "asc")
+      } else {
+         setSortBy(field)
+         setSortOrder("asc")
+      }
+   }
+
    return (
       <div className="space-y-4">
          <div className="flex items-center justify-between">
@@ -44,17 +59,25 @@ export function EmployeeListClient() {
                search={search}
                department={params.department ?? ""}
                status={params.status ?? ""}
+               role={params.role ?? ""}
                onSearchChange={setSearch}
                onDepartmentChange={setDepartment}
                onStatusChange={setStatus}
+               onRoleChange={setRole}
                onReset={resetFilters}
                hasActiveFilters={hasActiveFilters}
                isFetching={isFetching}
             />
-            <Button onClick={() => setShowForm(true)}>
-               <Plus className="mr-2 size-4" />
-               Add Employee
-            </Button>
+            <div className="flex gap-2">
+               <Button variant="outline" onClick={() => setShowImport(true)}>
+                  <Upload className="mr-2 size-4" />
+                  Import CSV
+               </Button>
+               <Button onClick={() => setShowForm(true)}>
+                  <Plus className="mr-2 size-4" />
+                  Add Employee
+               </Button>
+            </div>
          </div>
 
          {isLoading ? (
@@ -63,6 +86,9 @@ export function EmployeeListClient() {
             <div>
                <EmployeeTable
                   employees={query.data.items}
+                  sortBy={params.sortBy ?? "createdAt"}
+                  sortOrder={params.sortOrder ?? "desc"}
+                  onSort={handleSort}
                   onEdit={emp => setEditingEmployee(emp)}
                   onDelete={emp => setDeletingEmployee(emp)}
                />
@@ -104,6 +130,8 @@ export function EmployeeListClient() {
                isPending={false}
             />
          )}
+
+         {showImport && <CsvImportDialog onClose={() => setShowImport(false)} />}
       </div>
    )
 }

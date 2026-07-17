@@ -26,7 +26,7 @@ function DashboardContent() {
             departmentCount={data.stats.departmentCount}
             recentHires={data.stats.recentHires}
          />
-         <div className="grid grid-cols-2 gap-6 mt-3">
+         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-3">
             <DepartmentChart data={data.departmentDistribution} />
             <RecentActivity activities={data.recentActivity} />
          </div>

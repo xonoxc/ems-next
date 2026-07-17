@@ -9,6 +9,8 @@ export const DEPARTMENTS = [
 
 export const STATUSES = ["active", "inactive", "terminated"] as const
 
+export const ROLES = ["super_admin", "hr_manager", "employee"] as const
+
 export const DESIGNATIONS = [
    "Software Engineer",
    "Senior Software Engineer",
@@ -57,4 +59,5 @@ export const SORT_FIELDS = [
 
 export type Department = (typeof DEPARTMENTS)[number]
 export type EmployeeStatus = (typeof STATUSES)[number]
+export type EmployeeRole = (typeof ROLES)[number]
 export type SortField = (typeof SORT_FIELDS)[number]

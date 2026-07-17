@@ -10,15 +10,19 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Edit, Trash2 } from "lucide-react"
+import { Edit, Trash2, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react"
 import Link from "next/link"
 import { useQueryClient } from "@tanstack/react-query"
 import { employeeQueryOptions } from "@/features/employees/api/query-options"
 import { EmployeeAvatar } from "./EmployeeAvatar"
+import { format } from "date-fns"
 import type { Employee } from "@/features/employees/types"
 
 interface EmployeeTableProps {
    employees: Employee[]
+   sortBy: string
+   sortOrder: "asc" | "desc"
+   onSort: (field: string) => void
    onEdit: (employee: Employee) => void
    onDelete: (employee: Employee) => void
 }
@@ -29,7 +33,23 @@ const statusBadgeVariant: Record<string, "default" | "secondary" | "destructive"
    terminated: "destructive",
 }
 
-export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProps) {
+const sortableColumns = [
+   { key: "firstName", label: "Employee" },
+   { key: "employeeId", label: "ID" },
+   { key: "department", label: "Department" },
+   { key: "status", label: "Status" },
+   { key: "salary", label: "Salary", align: "right" as const },
+   { key: "joiningDate", label: "Joined" },
+] as const
+
+export function EmployeeTable({
+   employees,
+   sortBy,
+   sortOrder,
+   onSort,
+   onEdit,
+   onDelete,
+}: EmployeeTableProps) {
    const queryClient = useQueryClient()
 
    if (employees.length === 0) return null
@@ -38,11 +58,27 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
       <Table>
          <TableHeader>
             <TableRow>
-               <TableHead>Employee</TableHead>
-               <TableHead>ID</TableHead>
-               <TableHead>Department</TableHead>
-               <TableHead>Status</TableHead>
-               <TableHead className="text-right">Salary</TableHead>
+               {sortableColumns.map(col => (
+                  <TableHead key={col.key} className={col.align === "right" ? "text-right" : ""}>
+                     <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 gap-1 px-2 font-medium"
+                        onClick={() => onSort(col.key)}
+                     >
+                        {col.label}
+                        {sortBy === col.key ? (
+                           sortOrder === "asc" ? (
+                              <ArrowUp className="size-3.5" />
+                           ) : (
+                              <ArrowDown className="size-3.5" />
+                           )
+                        ) : (
+                           <ArrowUpDown className="size-3.5 opacity-50" />
+                        )}
+                     </Button>
+                  </TableHead>
+               ))}
                <TableHead className="text-right">Actions</TableHead>
             </TableRow>
          </TableHeader>
@@ -81,6 +117,9 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
                   </TableCell>
                   <TableCell className="text-right font-mono">
                      ${Number(employee.salary).toLocaleString()}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-sm">
+                     {format(new Date(employee.joiningDate), "MMM yyyy")}
                   </TableCell>
                   <TableCell>
                      <div className="flex justify-end gap-1">

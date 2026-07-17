@@ -11,7 +11,7 @@ import { useDeleteEmployee } from "./mutations/useDeleteEmployee"
 import { attempt } from "@/lib/errors"
 import { toast } from "sonner"
 import type { EmployeeQueryParams, Employee, CreateEmployeeInput } from "@/features/employees/types"
-import type { Department, EmployeeStatus } from "@/features/employees/constants"
+import type { Department, EmployeeStatus, EmployeeRole } from "@/features/employees/constants"
 
 const DEFAULT_PARAMS: EmployeeQueryParams = {
    page: 1,
@@ -50,6 +50,14 @@ export function useEmployeesScreen() {
       setFilters((prev: EmployeeQueryParams) => ({
          ...prev,
          status: status as EmployeeStatus | undefined,
+         page: 1,
+      }))
+   }
+
+   const setRole = (role: string | undefined) => {
+      setFilters((prev: EmployeeQueryParams) => ({
+         ...prev,
+         role: role as EmployeeRole | undefined,
          page: 1,
       }))
    }
@@ -117,7 +125,7 @@ export function useEmployeesScreen() {
       )
    }
 
-   const hasActiveFilters = !!(search || filters.department || filters.status)
+   const hasActiveFilters = !!(search || filters.department || filters.status || filters.role)
 
    const queryParams = { ...filters, search: debouncedSearch || undefined }
    const result = useEmployees(queryParams)
@@ -158,6 +166,7 @@ export function useEmployeesScreen() {
       setSearch,
       setDepartment,
       setStatus,
+      setRole,
       setSortBy,
       setSortOrder,
       setPage,
