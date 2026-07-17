@@ -10,7 +10,7 @@ export default async function EmployeesPage() {
    const queryClient = new QueryClient()
 
    const sessionResult = await requireSession()
-   sessionResult.match(
+   await sessionResult.match(
       async session => {
          const result = await EmployeeService.findMany({
             page: 1,
@@ -25,7 +25,15 @@ export default async function EmployeesPage() {
                   emp => filterFields(emp as Record<string, unknown>, role, false) as Employee
                )
                queryClient.setQueryData(
-                  ["employees", { page: 1, pageSize: 10, sortBy: "createdAt", sortOrder: "desc" }],
+                  [
+                     "employees",
+                     {
+                        page: 1,
+                        pageSize: 10,
+                        sortBy: "createdAt",
+                        sortOrder: "desc",
+                     },
+                  ],
                   { ...data, items: filteredItems }
                )
             },
