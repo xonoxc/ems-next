@@ -1,48 +1,24 @@
 "use client"
 
-import { useState } from "react"
 import { useEmployeeScreen } from "@/features/employees/hooks/useEmployeeScreen"
 import { EmployeeDetail } from "@/features/employees/components/EmployeeDetail"
 import { EmployeeForm } from "@/features/employees/components/EmployeeForm"
 import { EmployeeDetailSkeleton } from "@/features/employees/components/EmployeeSkeleton"
 import { DeleteEmployeeDialog } from "@/features/employees/components/DeleteEmployeeDialog"
-import { useUpdateEmployee } from "@/features/employees/hooks/mutations/useUpdateEmployee"
-import { useDeleteEmployee } from "@/features/employees/hooks/mutations/useDeleteEmployee"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
-import { attempt } from "@/lib/errors"
-import type { CreateEmployeeInput } from "@/features/employees/types"
+import { useState } from "react"
 
 export function EmployeeDetailClient({ id }: { id: string }) {
-   const router = useRouter()
-   const { query } = useEmployeeScreen(id)
-   const updateMutation = useUpdateEmployee(id)
-   const deleteMutation = useDeleteEmployee()
-   const [editing, setEditing] = useState(false)
-   const [deleting, setDeleting] = useState(false)
+   const {
+      query,
+      editing,
+      setEditing,
+      deleting,
+      setDeleting,
+      handleUpdate,
+      handleDelete,
+      isSubmitting,
+   } = useEmployeeScreen(id)
    const [managerName, setManagerName] = useState<string | undefined>(undefined)
-
-   const handleUpdate = async (data: CreateEmployeeInput) => {
-      const result = await attempt(updateMutation.mutateAsync(data))
-      result.match(
-         () => {
-            toast.success("Employee updated")
-            setEditing(false)
-         },
-         err => toast.error(err instanceof Error ? err.message : "Failed to update")
-      )
-   }
-
-   const handleDelete = async () => {
-      const result = await attempt(deleteMutation.mutateAsync(id))
-      result.match(
-         () => {
-            toast.success("Employee deleted")
-            router.push("/employees")
-         },
-         err => toast.error(err instanceof Error ? err.message : "Failed to delete")
-      )
-   }
 
    if (!query.data) return <EmployeeDetailSkeleton />
 
@@ -66,7 +42,7 @@ export function EmployeeDetailClient({ id }: { id: string }) {
                      employee={employee}
                      onSubmit={handleUpdate}
                      onCancel={() => setEditing(false)}
-                     isSubmitting={updateMutation.isPending}
+                     isSubmitting={isSubmitting}
                   />
                </div>
             </div>
@@ -77,7 +53,7 @@ export function EmployeeDetailClient({ id }: { id: string }) {
                employee={employee}
                onConfirm={handleDelete}
                onCancel={() => setDeleting(false)}
-               isPending={deleteMutation.isPending}
+               isPending={false}
             />
          )}
       </div>

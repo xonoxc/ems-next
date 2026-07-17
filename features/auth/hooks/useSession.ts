@@ -1,8 +1,11 @@
 "use client"
 
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { authClient } from "@/lib/auth-client"
 
 export function useSession() {
+   const router = useRouter()
    const { data: session, isPending, error, refetch } = authClient.useSession()
 
    const signIn = async (email: string, password: string) => {
@@ -10,7 +13,10 @@ export function useSession() {
    }
 
    const signOut = async () => {
-      return authClient.signOut()
+      const toastId = toast.loading("Logging out...")
+      await authClient.signOut()
+      toast.success("Logged out", { id: toastId })
+      router.push("/login")
    }
 
    return {

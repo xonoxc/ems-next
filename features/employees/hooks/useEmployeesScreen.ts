@@ -2,7 +2,13 @@
 
 import { useState } from "react"
 import { useEmployees } from "./queries/useEmployees"
-import type { EmployeeQueryParams } from "@/features/employees/types"
+import { useDebouncedValue } from "@/hooks/use-debounced-value"
+import { useCreateEmployee } from "./mutations/useCreateEmployee"
+import { useUpdateEmployee } from "./mutations/useUpdateEmployee"
+import { useDeleteEmployee } from "./mutations/useDeleteEmployee"
+import { attempt } from "@/lib/errors"
+import { toast } from "sonner"
+import type { EmployeeQueryParams, Employee, CreateEmployeeInput } from "@/features/employees/types"
 import type { Department, EmployeeStatus } from "@/features/employees/constants"
 
 const DEFAULT_PARAMS: EmployeeQueryParams = {
@@ -13,14 +19,25 @@ const DEFAULT_PARAMS: EmployeeQueryParams = {
 }
 
 export function useEmployeesScreen() {
-   const [params, setParams] = useState<EmployeeQueryParams>(DEFAULT_PARAMS)
+   const [search, setSearchRaw] = useState("")
+   const debouncedSearch = useDebouncedValue(search, 300)
+   const [filters, setFilters] = useState<EmployeeQueryParams>(DEFAULT_PARAMS)
 
-   const setSearch = (search: string) => {
-      setParams((prev: EmployeeQueryParams) => ({ ...prev, search: search || undefined, page: 1 }))
+   const [showForm, setShowForm] = useState(false)
+   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
+   const [deletingEmployee, setDeletingEmployee] = useState<Employee | null>(null)
+
+   const createMutation = useCreateEmployee()
+   const updateMutation = useUpdateEmployee("")
+   const deleteMutation = useDeleteEmployee()
+
+   const setSearch = (value: string) => {
+      setSearchRaw(value)
+      setFilters((prev: EmployeeQueryParams) => ({ ...prev, search: value || undefined, page: 1 }))
    }
 
    const setDepartment = (department: string | undefined) => {
-      setParams((prev: EmployeeQueryParams) => ({
+      setFilters((prev: EmployeeQueryParams) => ({
          ...prev,
          department: department as Department | undefined,
          page: 1,
@@ -28,7 +45,7 @@ export function useEmployeesScreen() {
    }
 
    const setStatus = (status: string | undefined) => {
-      setParams((prev: EmployeeQueryParams) => ({
+      setFilters((prev: EmployeeQueryParams) => ({
          ...prev,
          status: status as EmployeeStatus | undefined,
          page: 1,
@@ -36,29 +53,67 @@ export function useEmployeesScreen() {
    }
 
    const setSortBy = (sortBy: string) => {
-      setParams((prev: EmployeeQueryParams) => ({ ...prev, sortBy }))
+      setFilters((prev: EmployeeQueryParams) => ({ ...prev, sortBy }))
    }
 
    const setSortOrder = (sortOrder: "asc" | "desc") => {
-      setParams((prev: EmployeeQueryParams) => ({ ...prev, sortOrder }))
+      setFilters((prev: EmployeeQueryParams) => ({ ...prev, sortOrder }))
    }
 
    const setPage = (page: number) => {
-      setParams((prev: EmployeeQueryParams) => ({ ...prev, page }))
+      setFilters((prev: EmployeeQueryParams) => ({ ...prev, page }))
    }
 
    const resetFilters = () => {
-      setParams(DEFAULT_PARAMS)
+      setSearchRaw("")
+      setFilters(DEFAULT_PARAMS)
    }
 
-   const hasActiveFilters = !!(params.search || params.department || params.status)
+   const handleCreate = async (data: CreateEmployeeInput) => {
+      const result = await attempt(createMutation.mutateAsync(data))
+      result.match(
+         () => {
+            toast.success("Employee created successfully")
+            setShowForm(false)
+         },
+         err => toast.error((err as Error).message ?? "Failed to create employee")
+      )
+   }
 
-   const result = useEmployees(params)
+   const handleUpdate = async (data: CreateEmployeeInput) => {
+      if (!editingEmployee) return
+      const result = await attempt(updateMutation.mutateAsync(data))
+      result.match(
+         () => {
+            toast.success("Employee updated successfully")
+            setEditingEmployee(null)
+         },
+         err => toast.error((err as Error).message ?? "Failed to update employee")
+      )
+   }
+
+   const handleDelete = async () => {
+      if (!deletingEmployee) return
+      const result = await attempt(deleteMutation.mutateAsync(deletingEmployee.id))
+      result.match(
+         () => {
+            toast.success("Employee deleted successfully")
+            setDeletingEmployee(null)
+         },
+         err => toast.error((err as Error).message ?? "Failed to delete employee")
+      )
+   }
+
+   const hasActiveFilters = !!(search || filters.department || filters.status)
+
+   const queryParams = { ...filters, search: debouncedSearch || undefined }
+   const result = useEmployees(queryParams)
 
    return {
       query: result,
-      params,
-      totalPages: Math.ceil((result.data?.total ?? 0) / params.pageSize),
+      params: { ...filters, search: debouncedSearch || undefined },
+      search,
+      totalPages: Math.ceil((result.data?.total ?? 0) / filters.pageSize),
       setSearch,
       setDepartment,
       setStatus,
@@ -67,5 +122,15 @@ export function useEmployeesScreen() {
       setPage,
       resetFilters,
       hasActiveFilters,
+      showForm,
+      setShowForm,
+      editingEmployee,
+      setEditingEmployee,
+      deletingEmployee,
+      setDeletingEmployee,
+      handleCreate,
+      handleUpdate,
+      handleDelete,
+      isSubmitting: createMutation.isPending || updateMutation.isPending,
    }
 }

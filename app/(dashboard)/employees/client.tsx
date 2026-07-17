@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { EmployeeTable } from "@/features/employees/components/EmployeeTable"
 import { EmployeeFilters } from "@/features/employees/components/EmployeeFilters"
 import { EmployeePagination } from "@/features/employees/components/EmployeePagination"
@@ -9,20 +8,15 @@ import { DeleteEmployeeDialog } from "@/features/employees/components/DeleteEmpl
 import { EmployeeEmptyState } from "@/features/employees/components/EmployeeEmptyState"
 import { EmployeeTableSkeleton } from "@/features/employees/components/EmployeeSkeleton"
 import { useEmployeesScreen } from "@/features/employees/hooks/useEmployeesScreen"
-import { useCreateEmployee } from "@/features/employees/hooks/mutations/useCreateEmployee"
-import { useUpdateEmployee } from "@/features/employees/hooks/mutations/useUpdateEmployee"
-import { useDeleteEmployee } from "@/features/employees/hooks/mutations/useDeleteEmployee"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
-import { toast } from "sonner"
 import { Suspense } from "react"
-import { attempt } from "@/lib/errors"
-import type { Employee, CreateEmployeeInput } from "@/features/employees/types"
 
 export function EmployeeListClient() {
    const {
       query,
       params,
+      search,
       totalPages,
       setSearch,
       setDepartment,
@@ -30,56 +24,23 @@ export function EmployeeListClient() {
       setPage,
       resetFilters,
       hasActiveFilters,
+      showForm,
+      setShowForm,
+      editingEmployee,
+      setEditingEmployee,
+      deletingEmployee,
+      setDeletingEmployee,
+      handleCreate,
+      handleUpdate,
+      handleDelete,
+      isSubmitting,
    } = useEmployeesScreen()
-
-   const createMutation = useCreateEmployee()
-   const updateMutation = useUpdateEmployee("")
-   const deleteMutation = useDeleteEmployee()
-
-   const [showForm, setShowForm] = useState(false)
-   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
-   const [deletingEmployee, setDeletingEmployee] = useState<Employee | null>(null)
-
-   const handleCreate = async (data: CreateEmployeeInput) => {
-      const result = await attempt(createMutation.mutateAsync(data))
-      result.match(
-         () => {
-            toast.success("Employee created successfully")
-            setShowForm(false)
-         },
-         err => toast.error((err as Error).message ?? "Failed to create employee")
-      )
-   }
-
-   const handleUpdate = async (data: CreateEmployeeInput) => {
-      if (!editingEmployee) return
-      const result = await attempt(updateMutation.mutateAsync(data))
-      result.match(
-         () => {
-            toast.success("Employee updated successfully")
-            setEditingEmployee(null)
-         },
-         err => toast.error((err as Error).message ?? "Failed to update employee")
-      )
-   }
-
-   const handleDelete = async () => {
-      if (!deletingEmployee) return
-      const result = await attempt(deleteMutation.mutateAsync(deletingEmployee.id))
-      result.match(
-         () => {
-            toast.success("Employee deleted successfully")
-            setDeletingEmployee(null)
-         },
-         err => toast.error((err as Error).message ?? "Failed to delete employee")
-      )
-   }
 
    return (
       <div className="space-y-4">
          <div className="flex items-center justify-between">
             <EmployeeFilters
-               search={params.search ?? ""}
+               search={search}
                department={params.department ?? ""}
                status={params.status ?? ""}
                onSearchChange={setSearch}
@@ -128,7 +89,7 @@ export function EmployeeListClient() {
                         setShowForm(false)
                         setEditingEmployee(null)
                      }}
-                     isSubmitting={createMutation.isPending || updateMutation.isPending}
+                     isSubmitting={isSubmitting}
                   />
                </div>
             </div>
@@ -139,7 +100,7 @@ export function EmployeeListClient() {
                employee={deletingEmployee}
                onConfirm={handleDelete}
                onCancel={() => setDeletingEmployee(null)}
-               isPending={deleteMutation.isPending}
+               isPending={false}
             />
          )}
       </div>
