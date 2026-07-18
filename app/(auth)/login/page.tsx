@@ -31,7 +31,7 @@ export default function LoginPage() {
 function LoginForm() {
    const router = useRouter()
    const searchParams = useSearchParams()
-   const { session, isPending: sessionLoading, signIn } = useSession()
+   const { session, isPending: sessionLoading, signIn, refetch } = useSession()
    const [isSubmitting, setIsSubmitting] = useState(false)
 
    const {
@@ -55,24 +55,18 @@ function LoginForm() {
    async function onSubmit(data: LoginInput) {
       setIsSubmitting(true)
       try {
-         console.log("[LoginForm] onSubmit attempt:", data.email)
          const result = await attempt(signIn(data.email, data.password))
-         console.log("[LoginForm] attempt result:", JSON.stringify(result, null, 2))
          if (result.isErr()) {
-            console.error("[LoginForm] attempt error:", result.error)
             toast.error("An unexpected error occurred")
             return
          }
 
          if (result.value.error) {
-            console.error("[LoginForm] signIn error:", result.value.error)
             toast.error(result.value.error.message ?? "Invalid credentials")
             return
          }
+         await refetch()
          router.push("/dashboard")
-      } catch (err) {
-         console.error("[LoginForm] unexpected error:", err)
-         toast.error("An unexpected error occurred")
       } finally {
          setIsSubmitting(false)
       }

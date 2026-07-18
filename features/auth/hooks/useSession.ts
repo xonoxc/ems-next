@@ -9,15 +9,7 @@ export function useSession() {
    const { data: session, isPending, error, refetch } = authClient.useSession()
 
    const signIn = async (email: string, password: string) => {
-      try {
-         console.log("[useSession] signIn attempt for:", email)
-         const result = await authClient.signIn.email({ email, password })
-         console.log("[useSession] signIn result:", JSON.stringify(result, null, 2))
-         return result
-      } catch (err) {
-         console.error("[useSession] signIn error:", err)
-         throw err
-      }
+      return authClient.signIn.email({ email, password })
    }
 
    const signOut = async () => {
