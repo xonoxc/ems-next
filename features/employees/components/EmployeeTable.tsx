@@ -11,9 +11,6 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Edit, Trash2, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react"
-import { useNavigateWithParams } from "@/hooks/use-navigate-with-params"
-import { useQueryClient } from "@tanstack/react-query"
-import { employeeQueryOptions } from "@/features/employees/api/query-options"
 import { EmployeeAvatar } from "./EmployeeAvatar"
 import { format } from "date-fns"
 import type { Employee } from "@/features/employees/types"
@@ -25,6 +22,8 @@ interface EmployeeTableProps {
    onSort: (field: string) => void
    onEdit: (employee: Employee) => void
    onDelete: (employee: Employee) => void
+   onRowClick: (employee: Employee) => void
+   onRowHover: (employee: Employee) => void
 }
 
 const statusBadgeVariant: Record<string, "default" | "secondary" | "destructive"> = {
@@ -49,10 +48,9 @@ export function EmployeeTable({
    onSort,
    onEdit,
    onDelete,
+   onRowClick,
+   onRowHover,
 }: EmployeeTableProps) {
-   const queryClient = useQueryClient()
-   const { navigateTo } = useNavigateWithParams()
-
    if (employees.length === 0) return null
 
    return (
@@ -89,14 +87,9 @@ export function EmployeeTable({
                   <TableCell>
                      <button
                         type="button"
-                        onClick={() => navigateTo(`/employees/${employee.id}`)}
+                        onClick={() => onRowClick(employee)}
+                        onMouseEnter={() => onRowHover(employee)}
                         className="flex items-center gap-3 text-left"
-                        onMouseEnter={() =>
-                           queryClient.prefetchQuery({
-                              ...employeeQueryOptions(employee.id),
-                              staleTime: 60_000,
-                           })
-                        }
                      >
                         <EmployeeAvatar
                            src={employee.profileImage}

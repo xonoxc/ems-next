@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useEmployee } from "./queries/useEmployees"
+import { useEmployee, useEmployees, useReportees } from "./queries/useEmployees"
 import { useUpdateEmployee } from "./mutations/useUpdateEmployee"
 import { useDeleteEmployee } from "./mutations/useDeleteEmployee"
 import { useAssignManager } from "./mutations/useAssignManager"
@@ -13,6 +13,24 @@ import type { CreateEmployeeInput } from "@/features/employees/types"
 export function useEmployeeScreen(id: string) {
    const router = useRouter()
    const result = useEmployee(id)
+
+   const employeesQuery = useEmployees({
+      page: 1,
+      pageSize: 100,
+      sortBy: "firstName",
+      sortOrder: "asc",
+   })
+   const employees = employeesQuery.data?.items ?? []
+
+   const reporteesQuery = useReportees(id)
+   const reportees = reporteesQuery.data ?? []
+
+   const employee = result.data
+   const managerName = employee
+      ? employees.find(m => m.id === employee.managerId)
+         ? `${employees.find(m => m.id === employee.managerId)!.firstName} ${employees.find(m => m.id === employee.managerId)!.lastName}`
+         : undefined
+      : undefined
 
    const [editing, setEditing] = useState(false)
    const [deleting, setDeleting] = useState(false)
@@ -68,7 +86,10 @@ export function useEmployeeScreen(id: string) {
 
    return {
       query: result,
-      employee: result.data,
+      employee,
+      managerName,
+      employees,
+      reportees,
       editing,
       setEditing,
       deleting,

@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { EmployeeTable } from "@/features/employees/components/EmployeeTable"
 import { EmployeeFilters } from "@/features/employees/components/EmployeeFilters"
 import { EmployeePagination } from "@/features/employees/components/EmployeePagination"
@@ -14,7 +13,6 @@ import { Button } from "@/components/ui/button"
 import { Plus, Upload } from "lucide-react"
 
 export function EmployeeListClient() {
-   const [showImport, setShowImport] = useState(false)
    const {
       query,
       params,
@@ -26,13 +24,14 @@ export function EmployeeListClient() {
       setDepartment,
       setStatus,
       setRole,
-      setSortBy,
-      setSortOrder,
       setPage,
       resetFilters,
+      handleSort,
       hasActiveFilters,
       showForm,
       setShowForm,
+      showImport,
+      setShowImport,
       editingEmployee,
       setEditingEmployee,
       deletingEmployee,
@@ -40,17 +39,10 @@ export function EmployeeListClient() {
       handleCreate,
       handleUpdate,
       handleDelete,
+      handleRowClick,
+      handleRowHover,
       isSubmitting,
    } = useEmployeesScreen()
-
-   const handleSort = (field: string) => {
-      if (params.sortBy === field) {
-         setSortOrder(params.sortOrder === "asc" ? "desc" : "asc")
-      } else {
-         setSortBy(field)
-         setSortOrder("asc")
-      }
-   }
 
    return (
       <div className="space-y-4">
@@ -91,6 +83,8 @@ export function EmployeeListClient() {
                   onSort={handleSort}
                   onEdit={emp => setEditingEmployee(emp)}
                   onDelete={emp => setDeletingEmployee(emp)}
+                  onRowClick={handleRowClick}
+                  onRowHover={handleRowHover}
                />
                <EmployeePagination
                   page={params.page}

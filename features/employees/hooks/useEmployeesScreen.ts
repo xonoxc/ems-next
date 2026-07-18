@@ -3,6 +3,7 @@
 import { useState, useEffect, useEffectEvent } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useQueryStates, parseAsString, parseAsInteger, parseAsStringEnum } from "nuqs"
+import { useNavigateWithParams } from "@/hooks/use-navigate-with-params"
 import { useEmployees } from "./queries/useEmployees"
 import { employeesQueryOptions, employeeQueryOptions } from "@/features/employees/api/query-options"
 import { useCreateEmployee } from "./mutations/useCreateEmployee"
@@ -26,6 +27,7 @@ export function useEmployeesScreen() {
    })
 
    const [showForm, setShowForm] = useState(false)
+   const [showImport, setShowImport] = useState(false)
    const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
    const [deletingEmployee, setDeletingEmployee] = useState<Employee | null>(null)
 
@@ -75,6 +77,14 @@ export function useEmployeesScreen() {
          },
          { history: "push" }
       )
+   }
+
+   const handleSort = (field: string) => {
+      if (filters.sortBy === field) {
+         setFilters({ sortOrder: filters.sortOrder === "asc" ? "desc" : "asc" })
+      } else {
+         setFilters({ sortBy: field, sortOrder: "asc" })
+      }
    }
 
    const handleCreate = async (data: CreateEmployeeInput) => {
@@ -165,6 +175,19 @@ export function useEmployeesScreen() {
       prefetchVisibleDetails()
    }, [result.data])
 
+   const { navigateTo } = useNavigateWithParams()
+
+   const handleRowClick = (employee: { id: string }) => {
+      navigateTo(`/employees/${employee.id}`)
+   }
+
+   const handleRowHover = (employee: { id: string }) => {
+      queryClient.prefetchQuery({
+         ...employeeQueryOptions(employee.id),
+         staleTime: 60_000,
+      })
+   }
+
    return {
       query: result,
       filters,
@@ -187,9 +210,12 @@ export function useEmployeesScreen() {
       setSortOrder,
       setPage,
       resetFilters,
+      handleSort,
       hasActiveFilters,
       showForm,
       setShowForm,
+      showImport,
+      setShowImport,
       editingEmployee,
       setEditingEmployee,
       deletingEmployee,
@@ -197,6 +223,8 @@ export function useEmployeesScreen() {
       handleCreate,
       handleUpdate,
       handleDelete,
+      handleRowClick,
+      handleRowHover,
       isSubmitting: createMutation.isPending || updateMutation.isPending,
    }
 }

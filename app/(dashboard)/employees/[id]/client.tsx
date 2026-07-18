@@ -1,7 +1,6 @@
 "use client"
 
 import { useEmployeeScreen } from "@/features/employees/hooks/useEmployeeScreen"
-import { useEmployees, useReportees } from "@/features/employees/hooks/queries/useEmployees"
 import { EmployeeDetail } from "@/features/employees/components/EmployeeDetail"
 import { EmployeeForm } from "@/features/employees/components/EmployeeForm"
 import { EmployeeDetailSkeleton } from "@/features/employees/components/EmployeeSkeleton"
@@ -14,7 +13,10 @@ import { useNavigateWithParams } from "@/hooks/use-navigate-with-params"
 
 export function EmployeeDetailClient({ id }: { id: string }) {
    const {
-      query,
+      employee,
+      managerName,
+      employees,
+      reportees,
       editing,
       setEditing,
       deleting,
@@ -30,20 +32,7 @@ export function EmployeeDetailClient({ id }: { id: string }) {
 
    const { navigateTo } = useNavigateWithParams()
 
-   const employeesQuery = useEmployees({
-      page: 1,
-      pageSize: 100,
-      sortBy: "firstName",
-      sortOrder: "asc",
-   })
-   const employees = employeesQuery.data?.items ?? []
-
-   const reporteesQuery = useReportees(id)
-   const reportees = reporteesQuery.data ?? []
-
-   if (!query.data) return <EmployeeDetailSkeleton />
-
-   const employee = query.data
+   if (!employee) return <EmployeeDetailSkeleton />
 
    return (
       <div>
@@ -57,11 +46,7 @@ export function EmployeeDetailClient({ id }: { id: string }) {
          <div className="mt-4">
             <EmployeeDetail
                employee={employee}
-               managerName={
-                  employees.find(m => m.id === employee.managerId)
-                     ? `${employees.find(m => m.id === employee.managerId)!.firstName} ${employees.find(m => m.id === employee.managerId)!.lastName}`
-                     : undefined
-               }
+               managerName={managerName}
                reportees={reportees}
                onEdit={() => setEditing(true)}
                onDelete={() => setDeleting(true)}
