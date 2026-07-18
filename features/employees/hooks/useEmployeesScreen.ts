@@ -2,28 +2,28 @@
 
 import { useState, useEffect, useEffectEvent } from "react"
 import { useQueryClient } from "@tanstack/react-query"
+import { useQueryStates, parseAsString, parseAsInteger, parseAsStringEnum } from "nuqs"
 import { useEmployees } from "./queries/useEmployees"
-import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { employeesQueryOptions, employeeQueryOptions } from "@/features/employees/api/query-options"
 import { useCreateEmployee } from "./mutations/useCreateEmployee"
 import { useUpdateEmployee } from "./mutations/useUpdateEmployee"
 import { useDeleteEmployee } from "./mutations/useDeleteEmployee"
 import { attempt } from "@/lib/errors"
 import { toast } from "sonner"
-import type { EmployeeQueryParams, Employee, CreateEmployeeInput } from "@/features/employees/types"
+import type { Employee, CreateEmployeeInput } from "@/features/employees/types"
 import type { Department, EmployeeStatus, EmployeeRole } from "@/features/employees/constants"
 
-const DEFAULT_PARAMS: EmployeeQueryParams = {
-   page: 1,
-   pageSize: 10,
-   sortBy: "createdAt",
-   sortOrder: "desc",
-}
-
 export function useEmployeesScreen() {
-   const [search, setSearchRaw] = useState("")
-   const debouncedSearch = useDebouncedValue(search, 300)
-   const [filters, setFilters] = useState<EmployeeQueryParams>(DEFAULT_PARAMS)
+   const [filters, setFilters] = useQueryStates({
+      search: parseAsString.withDefault(""),
+      page: parseAsInteger.withDefault(1),
+      pageSize: parseAsInteger.withDefault(10),
+      sortBy: parseAsString.withDefault("createdAt"),
+      sortOrder: parseAsStringEnum(["asc", "desc"]).withDefault("desc"),
+      department: parseAsString.withDefault(""),
+      status: parseAsString.withDefault(""),
+      role: parseAsString.withDefault(""),
+   })
 
    const [showForm, setShowForm] = useState(false)
    const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
@@ -34,49 +34,47 @@ export function useEmployeesScreen() {
    const deleteMutation = useDeleteEmployee()
 
    const setSearch = (value: string) => {
-      setSearchRaw(value)
-      setFilters((prev: EmployeeQueryParams) => ({ ...prev, search: value || undefined, page: 1 }))
+      setFilters({ search: value, page: 1 }, { history: "push" })
    }
 
    const setDepartment = (department: string | undefined) => {
-      setFilters((prev: EmployeeQueryParams) => ({
-         ...prev,
-         department: department as Department | undefined,
-         page: 1,
-      }))
+      setFilters({ department: department || null, page: 1 }, { history: "push" })
    }
 
    const setStatus = (status: string | undefined) => {
-      setFilters((prev: EmployeeQueryParams) => ({
-         ...prev,
-         status: status as EmployeeStatus | undefined,
-         page: 1,
-      }))
+      setFilters({ status: status || null, page: 1 }, { history: "push" })
    }
 
    const setRole = (role: string | undefined) => {
-      setFilters((prev: EmployeeQueryParams) => ({
-         ...prev,
-         role: role as EmployeeRole | undefined,
-         page: 1,
-      }))
+      setFilters({ role: role || null, page: 1 }, { history: "push" })
    }
 
    const setSortBy = (sortBy: string) => {
-      setFilters((prev: EmployeeQueryParams) => ({ ...prev, sortBy }))
+      setFilters({ sortBy })
    }
 
    const setSortOrder = (sortOrder: "asc" | "desc") => {
-      setFilters((prev: EmployeeQueryParams) => ({ ...prev, sortOrder }))
+      setFilters({ sortOrder })
    }
 
    const setPage = (page: number) => {
-      setFilters((prev: EmployeeQueryParams) => ({ ...prev, page }))
+      setFilters({ page })
    }
 
    const resetFilters = () => {
-      setSearchRaw("")
-      setFilters(DEFAULT_PARAMS)
+      setFilters(
+         {
+            search: null,
+            page: null,
+            pageSize: null,
+            sortBy: null,
+            sortOrder: null,
+            department: null,
+            status: null,
+            role: null,
+         },
+         { history: "push" }
+      )
    }
 
    const handleCreate = async (data: CreateEmployeeInput) => {
@@ -125,9 +123,20 @@ export function useEmployeesScreen() {
       )
    }
 
-   const hasActiveFilters = !!(search || filters.department || filters.status || filters.role)
+   const hasActiveFilters = !!(
+      filters.search ||
+      filters.department ||
+      filters.status ||
+      filters.role
+   )
 
-   const queryParams = { ...filters, search: debouncedSearch || undefined }
+   const queryParams = {
+      ...filters,
+      search: filters.search || undefined,
+      department: (filters.department || undefined) as Department | undefined,
+      status: (filters.status || undefined) as EmployeeStatus | undefined,
+      role: (filters.role || undefined) as EmployeeRole | undefined,
+   }
    const result = useEmployees(queryParams)
    const totalPages = Math.ceil((result.data?.total ?? 0) / filters.pageSize)
 
@@ -158,8 +167,15 @@ export function useEmployeesScreen() {
 
    return {
       query: result,
-      params: { ...filters, search: debouncedSearch || undefined },
-      search,
+      filters,
+      params: {
+         ...filters,
+         search: filters.search || undefined,
+         department: (filters.department || undefined) as Department | undefined,
+         status: (filters.status || undefined) as EmployeeStatus | undefined,
+         role: (filters.role || undefined) as EmployeeRole | undefined,
+      },
+      search: filters.search,
       totalPages,
       isLoading: result.isLoading,
       isFetching: result.isFetching,

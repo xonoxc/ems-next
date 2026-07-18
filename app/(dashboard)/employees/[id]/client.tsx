@@ -10,7 +10,7 @@ import { AssignManagerDialog } from "@/features/employees/components/AssignManag
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
-import Link from "next/link"
+import { useNavigateWithParams } from "@/hooks/use-navigate-with-params"
 
 export function EmployeeDetailClient({ id }: { id: string }) {
    const {
@@ -27,6 +27,8 @@ export function EmployeeDetailClient({ id }: { id: string }) {
       isSubmitting,
       isAssigningManager,
    } = useEmployeeScreen(id)
+
+   const { navigateTo } = useNavigateWithParams()
 
    const employeesQuery = useEmployees({
       page: 1,
@@ -45,12 +47,12 @@ export function EmployeeDetailClient({ id }: { id: string }) {
 
    return (
       <div>
-         <Link href="/employees">
+         <button type="button" onClick={() => navigateTo("/employees")}>
             <Button variant="ghost" size="sm">
                <ArrowLeft className="size-4" />
                Back to Employees
             </Button>
-         </Link>
+         </button>
 
          <div className="mt-4">
             <EmployeeDetail

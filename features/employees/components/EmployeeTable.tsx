@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Edit, Trash2, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react"
-import Link from "next/link"
+import { useNavigateWithParams } from "@/hooks/use-navigate-with-params"
 import { useQueryClient } from "@tanstack/react-query"
 import { employeeQueryOptions } from "@/features/employees/api/query-options"
 import { EmployeeAvatar } from "./EmployeeAvatar"
@@ -51,6 +51,7 @@ export function EmployeeTable({
    onDelete,
 }: EmployeeTableProps) {
    const queryClient = useQueryClient()
+   const { navigateTo } = useNavigateWithParams()
 
    if (employees.length === 0) return null
 
@@ -86,9 +87,10 @@ export function EmployeeTable({
             {employees.map(employee => (
                <TableRow key={employee.id}>
                   <TableCell>
-                     <Link
-                        href={`/employees/${employee.id}`}
-                        className="flex items-center gap-3"
+                     <button
+                        type="button"
+                        onClick={() => navigateTo(`/employees/${employee.id}`)}
+                        className="flex items-center gap-3 text-left"
                         onMouseEnter={() =>
                            queryClient.prefetchQuery({
                               ...employeeQueryOptions(employee.id),
@@ -108,7 +110,7 @@ export function EmployeeTable({
                            </p>
                            <p className="text-xs text-muted-foreground">{employee.email}</p>
                         </div>
-                     </Link>
+                     </button>
                   </TableCell>
                   <TableCell className="font-mono text-xs">{employee.employeeId}</TableCell>
                   <TableCell>{employee.department}</TableCell>

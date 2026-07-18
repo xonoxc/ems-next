@@ -2,25 +2,31 @@ import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query
 import { EmployeeService } from "@/features/employees/server/service"
 import { employeesQueryOptions } from "@/features/employees/api/query-options"
 import { EmployeeListClient } from "./client"
+import { searchParamsCache } from "@/features/employees/search-params"
+import type { SearchParams } from "nuqs/server"
+import type { Department, EmployeeStatus, EmployeeRole } from "@/features/employees/constants"
 
-const DEFAULT_PARAMS = {
-   page: 1,
-   pageSize: 10,
-   sortBy: "createdAt",
-   sortOrder: "desc" as const,
-   search: undefined,
-   department: undefined,
-   status: undefined,
-   role: undefined,
-}
+export default async function EmployeesPage({
+   searchParams,
+}: {
+   searchParams: Promise<SearchParams>
+}) {
+   const params = await searchParamsCache.parse(searchParams)
 
-export default async function EmployeesPage() {
+   const queryParams = {
+      ...params,
+      search: params.search || undefined,
+      department: (params.department || undefined) as Department | undefined,
+      status: (params.status || undefined) as EmployeeStatus | undefined,
+      role: (params.role || undefined) as EmployeeRole | undefined,
+   }
+
    const queryClient = new QueryClient()
 
    await queryClient.prefetchQuery({
-      ...employeesQueryOptions(DEFAULT_PARAMS),
+      ...employeesQueryOptions(queryParams),
       queryFn: async () => {
-         const result = await EmployeeService.findMany(DEFAULT_PARAMS)
+         const result = await EmployeeService.findMany(queryParams)
          if (result.isErr()) {
             throw new Error(result.error.message)
          }

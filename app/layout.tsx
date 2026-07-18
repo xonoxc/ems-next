@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
+import { NuqsAdapter } from "nuqs/adapters/next/app"
 import { QueryProvider } from "@/components/providers/query-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Toaster } from "@/components/ui/sonner"
@@ -31,7 +32,9 @@ export default function RootLayout({
          </head>
          <body className="h-full flex flex-col" suppressHydrationWarning>
             <TooltipProvider>
-               <QueryProvider>{children}</QueryProvider>
+               <NuqsAdapter>
+                  <QueryProvider>{children}</QueryProvider>
+               </NuqsAdapter>
             </TooltipProvider>
             <Toaster />
          </body>
