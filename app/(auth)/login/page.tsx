@@ -54,18 +54,21 @@ function LoginForm() {
 
    async function onSubmit(data: LoginInput) {
       setIsSubmitting(true)
-      const result = await attempt(signIn(data.email, data.password))
-      if (result.isErr()) {
-         toast.error("An unexpected error occurred")
-         return
-      }
+      try {
+         const result = await attempt(signIn(data.email, data.password))
+         if (result.isErr()) {
+            toast.error("An unexpected error occurred")
+            return
+         }
 
-      if (result.value.error) {
-         toast.error(result.value.error.message ?? "Invalid credentials")
-         return
+         if (result.value.error) {
+            toast.error(result.value.error.message ?? "Invalid credentials")
+            return
+         }
+         router.push("/dashboard")
+      } finally {
+         setIsSubmitting(false)
       }
-      router.push("/dashboard")
-      setIsSubmitting(false)
    }
 
    if (sessionLoading) {

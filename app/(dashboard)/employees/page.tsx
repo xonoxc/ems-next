@@ -1,8 +1,10 @@
+import { Suspense } from "react"
 import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query"
 import { EmployeeService } from "@/features/employees/server/service"
 import { employeesQueryOptions } from "@/features/employees/api/query-options"
 import { EmployeeListClient } from "./client"
 import { searchParamsCache } from "@/features/employees/search-params"
+import { EmployeeTableSkeleton } from "@/features/employees/components/EmployeeSkeleton"
 import type { SearchParams } from "nuqs/server"
 import type { Department, EmployeeStatus, EmployeeRole } from "@/features/employees/constants"
 
@@ -41,7 +43,9 @@ export default async function EmployeesPage({
                <h1 className="text-2xl font-bold">Employees</h1>
                <p className="text-muted-foreground">Manage your organization&apos;s employees</p>
             </div>
-            <EmployeeListClient />
+            <Suspense fallback={<EmployeeTableSkeleton />}>
+               <EmployeeListClient />
+            </Suspense>
          </div>
       </HydrationBoundary>
    )
