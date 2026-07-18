@@ -4,7 +4,7 @@ services:
     ports: ["3000:3000"]
     environment:
       DATABASE_URL: postgres://ems:ems_password@postgres:5432/ems
-      BETTER_AUTH_SECRET: your-secret-here-min-16-chars
+      BETTER_AUTH_SECRET: f+imj/i43w6uFWyoGEyHzIQ8Ds/zjOnnO65V+H5sUfQ=
       BETTER_AUTH_URL: http://localhost:3000
     depends_on:
       postgres:

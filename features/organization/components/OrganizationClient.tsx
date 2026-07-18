@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState } from "react"
 import { useOrganizationScreen } from "@/features/organization/hooks/useOrganizationScreen"
 import { OrgTree } from "@/features/organization/components/OrgTree"
 import { OrgTreeControls } from "@/features/organization/components/OrgTreeControls"
@@ -11,7 +11,7 @@ export function OrganizationClient() {
    const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
    const [maxDepth, setMaxDepth] = useState(10)
 
-   const toggleNode = useCallback((id: string) => {
+   const toggleNode = (id: string) => {
       setExpandedIds(prev => {
          const next = new Set(prev)
          if (next.has(id)) {
@@ -21,18 +21,16 @@ export function OrganizationClient() {
          }
          return next
       })
-   }, [])
+   }
 
-   const expandAll = useCallback(() => {
+   const expandAll = () => {
       const collectIds = (nodes: typeof data): string[] => {
-         return nodes.flatMap(n => [n.id, ...collectIds(n.children)])
+         return nodes ? nodes.flatMap(n => [n.id, ...collectIds(n.children)]) : []
       }
       setExpandedIds(new Set(collectIds(data)))
-   }, [data])
+   }
 
-   const collapseAll = useCallback(() => {
-      setExpandedIds(new Set())
-   }, [])
+   const collapseAll = () => setExpandedIds(new Set())
 
    return (
       <div className={`space-y-4 ${query.isPending ? "opacity-60 pointer-events-none" : ""}`}>
@@ -45,7 +43,7 @@ export function OrganizationClient() {
             onCollapseAll={collapseAll}
          />
          <OrgTree
-            nodes={data}
+            nodes={data ?? []}
             search={search}
             expandedIds={expandedIds}
             maxDepth={maxDepth}

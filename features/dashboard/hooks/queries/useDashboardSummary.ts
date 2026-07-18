@@ -1,11 +1,12 @@
 "use client"
 
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { useSuspenseQuery } from "@tanstack/react-query"
 import { dashboardSummaryQueryOptions } from "@/features/dashboard/api/query-options"
 
 export function useDashboardSummary() {
-   return useQuery({
+   return useSuspenseQuery({
       ...dashboardSummaryQueryOptions(),
-      placeholderData: keepPreviousData,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
    })
 }
