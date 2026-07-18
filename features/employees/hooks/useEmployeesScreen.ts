@@ -9,7 +9,7 @@ import { employeesQueryOptions, employeeQueryOptions } from "@/features/employee
 import { useCreateEmployee } from "./mutations/useCreateEmployee"
 import { useUpdateEmployee } from "./mutations/useUpdateEmployee"
 import { useDeleteEmployee } from "./mutations/useDeleteEmployee"
-import { attempt } from "@/lib/errors"
+import { attempt, getErrorMessage } from "@/lib/errors"
 import { toast } from "sonner"
 import type { Employee, CreateEmployeeInput } from "@/features/employees/types"
 import type { Department, EmployeeStatus, EmployeeRole } from "@/features/employees/constants"

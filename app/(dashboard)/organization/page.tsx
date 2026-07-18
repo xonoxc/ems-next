@@ -3,6 +3,8 @@ import { OrganizationService } from "@/features/organization/server/service"
 import { orgTreeQueryOptions } from "@/features/organization/api/query-options"
 import { OrganizationClient } from "@/features/organization/components/OrganizationClient"
 
+export const dynamic = "force-dynamic"
+
 export default async function OrganizationPage() {
    const queryClient = new QueryClient()
 

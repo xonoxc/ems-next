@@ -32,14 +32,14 @@ const statusBadgeVariant: Record<string, "default" | "secondary" | "destructive"
    terminated: "destructive",
 }
 
-const sortableColumns = [
+const sortableColumns: { key: string; label: string; align?: "right" }[] = [
    { key: "firstName", label: "Employee" },
    { key: "employeeId", label: "ID" },
    { key: "department", label: "Department" },
    { key: "status", label: "Status" },
-   { key: "salary", label: "Salary", align: "right" as const },
+   { key: "salary", label: "Salary", align: "right" },
    { key: "joiningDate", label: "Joined" },
-] as const
+]
 
 export function EmployeeTable({
    employees,

@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { LoginSchema, type LoginInput } from "@/features/auth/schemas"
 import { useSession } from "@/features/auth/hooks"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect } from "react"
+import { Suspense, useEffect } from "react"
 import { useState } from "react"
 import { toast } from "sonner"
 import { attempt } from "@/lib/errors"
@@ -15,6 +15,20 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 
 export default function LoginPage() {
+   return (
+      <Suspense
+         fallback={
+            <div className="flex items-center justify-center">
+               <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            </div>
+         }
+      >
+         <LoginForm />
+      </Suspense>
+   )
+}
+
+function LoginForm() {
    const router = useRouter()
    const searchParams = useSearchParams()
    const { session, isPending: sessionLoading, signIn } = useSession()
