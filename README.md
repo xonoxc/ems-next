@@ -25,6 +25,27 @@ A full-stack employee management platform with role-based access control, organi
 - **Language:** TypeScript 5
 - **Runtime:** Bun
 
+## Screenshots
+
+### Dashboard
+
+![Dashboard Summary](public/ss/main_dashboard_summery.png)
+
+### Employee Management
+
+![Employee Table](public/ss/employee_table.png)
+![Add Employee](public/ss/add_employee_modal.png)
+![Edit Employee](public/ss/edit_employee_modal.png)
+
+### Organization
+
+![Organization Structure](public/ss/organization_structure.png)
+![Manager Assignment](public/ss/manager_assgin_modal.png)
+
+### CSV Import
+
+![CSV Import](public/ss/csv_import.png)
+
 ## Getting Started
 
 ### Prerequisites
