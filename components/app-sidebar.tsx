@@ -31,7 +31,7 @@ const navItems = [
 
 export function AppSidebar() {
    const pathname = usePathname()
-   const { signOut, user } = useSession()
+   const { signOut, user, refetch } = useSession()
    const queryClient = useQueryClient()
 
    const prefetch = (key: string) => ({
@@ -117,7 +117,12 @@ export function AppSidebar() {
                   </div>
                </SidebarMenuItem>
                <SidebarMenuItem>
-                  <SidebarMenuButton onClick={() => signOut()} className="w-full">
+                  <SidebarMenuButton
+                     onClick={() => {
+                        signOut()
+                     }}
+                     className="w-full"
+                  >
                      <LogOut className="size-4" />
                      <span>Sign Out</span>
                   </SidebarMenuButton>

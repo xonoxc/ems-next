@@ -23,8 +23,9 @@ export function useSession() {
    const signOut = async () => {
       const toastId = toast.loading("Logging out...")
       await authClient.signOut()
+
       toast.success("Logged out", { id: toastId })
-      router.push("/login")
+      router.refresh()
    }
 
    return {
