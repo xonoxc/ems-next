@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
+function getAuthCookie(request: NextRequest) {
+   return (
+      request.cookies.get("__Secure-better-auth.session_token") ??
+      request.cookies.get("better-auth.session_token")
+   )
+}
+
 const publicPaths = ["/", "/login", "/api/auth"]
 
 function isPublicPath(pathname: string): boolean {
@@ -19,7 +26,7 @@ export function proxy(request: NextRequest) {
          return NextResponse.next()
       }
 
-      const authCookie = request.cookies.get("better-auth.session_token")
+      const authCookie = getAuthCookie(request)
       if (authCookie && (pathname === "/" || pathname === "/login")) {
          return NextResponse.redirect(new URL("/dashboard", request.url))
       }
@@ -27,7 +34,7 @@ export function proxy(request: NextRequest) {
       return NextResponse.next()
    }
 
-   const authCookie = request.cookies.get("better-auth.session_token")
+   const authCookie = getAuthCookie(request)
    if (!authCookie) {
       const loginUrl = new URL("/login", request.url)
       loginUrl.searchParams.set("redirect", pathname)
