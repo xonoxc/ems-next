@@ -1,10 +1,8 @@
-import { Suspense } from "react"
 import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query"
 import { EmployeeService } from "@/features/employees/server/service"
 import { employeesQueryOptions } from "@/features/employees/api/query-options"
 import { EmployeeListClient } from "./client"
 import { searchParamsCache } from "@/features/employees/search-params"
-import { EmployeeTableSkeleton } from "@/features/employees/components/EmployeeSkeleton"
 import type { SearchParams } from "nuqs/server"
 import type { Department, EmployeeStatus, EmployeeRole } from "@/features/employees/constants"
 
@@ -23,7 +21,9 @@ export default async function EmployeesPage({
       role: (params.role || undefined) as EmployeeRole | undefined,
    }
 
-   const queryClient = new QueryClient()
+   const queryClient = new QueryClient({
+      defaultOptions: { queries: { staleTime: 30_000 } },
+   })
 
    await queryClient.prefetchQuery({
       ...employeesQueryOptions(queryParams),
@@ -43,9 +43,7 @@ export default async function EmployeesPage({
                <h1 className="text-2xl font-bold">Employees</h1>
                <p className="text-muted-foreground">Manage your organization&apos;s employees</p>
             </div>
-            <Suspense fallback={<EmployeeTableSkeleton />}>
-               <EmployeeListClient />
-            </Suspense>
+            <EmployeeListClient />
          </div>
       </HydrationBoundary>
    )

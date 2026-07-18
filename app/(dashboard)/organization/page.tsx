@@ -6,7 +6,9 @@ import { OrganizationClient } from "@/features/organization/components/Organizat
 export const dynamic = "force-dynamic"
 
 export default async function OrganizationPage() {
-   const queryClient = new QueryClient()
+   const queryClient = new QueryClient({
+      defaultOptions: { queries: { staleTime: 30_000 } },
+   })
 
    await queryClient.prefetchQuery({
       ...orgTreeQueryOptions(),

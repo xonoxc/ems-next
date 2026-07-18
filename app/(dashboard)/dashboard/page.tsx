@@ -4,8 +4,9 @@ import { dashboardSummaryQueryOptions } from "@/features/dashboard/api/query-opt
 import { DashboardClient } from "./client"
 
 export default async function DashboardPage() {
-   const queryClient = new QueryClient()
-
+   const queryClient = new QueryClient({
+      defaultOptions: { queries: { staleTime: 30_000 } },
+   })
    await queryClient.prefetchQuery({
       ...dashboardSummaryQueryOptions(),
       queryFn: async () => {
