@@ -7,6 +7,8 @@ export function employeesQueryOptions(params: EmployeeQueryParams) {
       queryKey: ["employees", params],
       queryFn: () => EmployeeApiClient.findMany(params),
       placeholderData: keepPreviousData,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
    })
 }
 
